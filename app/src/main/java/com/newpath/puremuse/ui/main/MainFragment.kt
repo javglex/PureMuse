@@ -11,16 +11,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.TextView
-import com.newpath.puremuse.MainActivity
+import com.newpath.puremuse.NavigationPageActivity
 import com.newpath.puremuse.R
 import com.newpath.puremuse.adapters.SongAdapter
+import com.newpath.puremuse.helpers.MediaPlayerHelper
 import com.newpath.puremuse.models.AudioFileModel
-import com.newpath.puremuse.utils.StoragePermissionHandler
+import com.newpath.puremuse.helpers.StoragePermissionHelper
 import kotlinx.android.synthetic.main.main_fragment.*
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(), SongAdapter.OnItemClickListener {
 
     var TAG: String = "MainFragment"
 
@@ -30,6 +29,7 @@ class MainFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
     private lateinit var songAdapter: SongAdapter
+    private lateinit var mMediaHelper: MediaPlayerHelper;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,9 +50,8 @@ class MainFragment : Fragment() {
         rv_scan_list.layoutManager = LinearLayoutManager(activity)
 
         // Access the RecyclerView Adapter and load the data into it
-        songAdapter = SongAdapter(viewModel.scannedSongList.value!!, this.context!!)
+        songAdapter = SongAdapter(this, viewModel.scannedSongList.value!!, this.context!!)
         rv_scan_list.adapter = songAdapter;
-
 
         viewModel.searchedSongList.observe(this, Observer { data ->
             Log.d(TAG,"observed searchedSongList change" + data!!.size);
@@ -96,8 +95,22 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        if (StoragePermissionHandler.handlePermissions(activity))
-            (activity as MainActivity).startScan(activity as MainActivity);
+        if (StoragePermissionHelper.handlePermissions(activity))
+            viewModel.startScan(activity as NavigationPageActivity)
+
+        mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(activity)
+
+    }
+
+
+    override fun onItemClicked(pos:Int) {
+        Log.d(TAG,"position clicked: " + pos);
+
+        var audioFile : AudioFileModel
+        if (viewModel.searchedSongList!=null && viewModel.searchedSongList.value!=null) {
+            audioFile = viewModel.searchedSongList.value!![pos]
+            mMediaHelper.setSong(audioFile).play()
+        }
 
     }
 
@@ -107,7 +120,7 @@ class MainFragment : Fragment() {
 //        when (view?.id) {
 //            R.id.btn_scan -> {
 //                Log.i(TAG,"onScanClicked!");
-//                if (StoragePermissionHandler.handlePermissions(activity))
+//                if (StoragePermissionHelper.handlePermissions(activity))
 //                    (activity as MainActivity).startScan(activity as MainActivity);
 //            }
 //            else -> {

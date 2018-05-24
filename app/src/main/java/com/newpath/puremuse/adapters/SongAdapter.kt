@@ -5,12 +5,20 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.arch.lifecycle.LiveData
+import android.util.Log
 import android.view.ViewGroup
 import com.newpath.puremuse.R
 import com.newpath.puremuse.models.AudioFileModel
 import kotlinx.android.synthetic.main.item_list_song.view.*
 
-class SongAdapter(val items : ArrayList<AudioFileModel>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
+class SongAdapter(val listener: SongAdapter.OnItemClickListener, val items : ArrayList<AudioFileModel>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
+
+    interface OnItemClickListener {
+        fun onItemClicked(position: Int)
+    }
+
+    private val TAG:String = "SongAdapter";
+
 
     fun updateList(list: ArrayList<AudioFileModel>){
 
@@ -31,7 +39,14 @@ class SongAdapter(val items : ArrayList<AudioFileModel>, val context: Context) :
 
     // Inflates the item views
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_list_song, parent, false))
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_list_song, parent, false)
+        val holder = ViewHolder(v)
+
+        holder.itemView.setOnClickListener {
+            Log.d(TAG, "position clicked in listener = " + holder.adapterPosition)
+            listener.onItemClicked(holder.adapterPosition);
+        }
+        return holder
     }
 
     // Binds each animal in the ArrayList to a view
@@ -40,7 +55,7 @@ class SongAdapter(val items : ArrayList<AudioFileModel>, val context: Context) :
             return
         holder?.tvTitle?.text = items.get(position).displayName
         holder?.tvAlbum?.text = items.get(position).album
-        holder?.tvArtist?.text = items.get(position).artist
+        holder?.tvArtist?.text = items.get(position).artist;
     }
 }
 
