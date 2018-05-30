@@ -1,10 +1,13 @@
 package com.newpath.puremuse.ui.main
 
+import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -17,9 +20,14 @@ import com.newpath.puremuse.adapters.SongAdapter
 import com.newpath.puremuse.helpers.MediaPlayerHelper
 import com.newpath.puremuse.models.AudioFileModel
 import com.newpath.puremuse.helpers.StoragePermissionHelper
-import kotlinx.android.synthetic.main.main_fragment.*
+import com.newpath.puremuse.interfaces.OnItemClickListener
+import kotlinx.android.synthetic.main.fragment_main.*
 
-class MainFragment : Fragment(), SongAdapter.OnItemClickListener {
+
+/**
+ * Home fragment. For now it just shows the user songs from his device.
+ */
+class MainFragment : Fragment(), OnItemClickListener {
 
     var TAG: String = "MainFragment"
 
@@ -27,19 +35,18 @@ class MainFragment : Fragment(), SongAdapter.OnItemClickListener {
         fun newInstance() = MainFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: SongViewModel
     private lateinit var songAdapter: SongAdapter
     private lateinit var mMediaHelper: MediaPlayerHelper;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel = ViewModelProviders.of(this.activity!!).get(MainViewModel::class.java)
-
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.main_fragment, container, false)
+
+        return inflater.inflate(R.layout.fragment_main, container, false)
 
     }
 
@@ -49,34 +56,24 @@ class MainFragment : Fragment(), SongAdapter.OnItemClickListener {
         // Creates a vertical Layout Manager
         rv_scan_list.layoutManager = LinearLayoutManager(activity)
 
-        // Access the RecyclerView Adapter and load the data into it
-        songAdapter = SongAdapter(this, viewModel.scannedSongList.value!!, this.context!!)
-        rv_scan_list.adapter = songAdapter;
-
-        viewModel.searchedSongList.observe(this, Observer { data ->
-            Log.d(TAG,"observed searchedSongList change" + data!!.size);
-            if (songAdapter!=null) {
-                Log.d(TAG,"updating songadapter list..")
-                songAdapter.updateList(data);
-            }
-        });
-
         et_searchfiles.addTextChangedListener(object: TextWatcher{
             override fun afterTextChanged(s: Editable?) {
                 Log.d(TAG,"afterTextChanged: "+ s);
 
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                Log.d(TAG,"beforeTextChanged: "+ s);
+                Log.d(TAG, "beforeTextChanged: " + s);
 
             }
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 Log.d(TAG,"onTextChanged: "+ s);
                 var tempSearchList = ArrayList<AudioFileModel>();
                 for (song in viewModel.scannedSongList.value!!){
+                    Log.d(TAG,"song searching for: "+ song);
+                    Log.d(TAG,"using string: "+ s);
+
                     if (song.toSearchableString().contains(s.toString().toLowerCase())){
+                        Log.d(TAG,"match!");
                         tempSearchList.add(song);
                     }
                 }
@@ -86,20 +83,31 @@ class MainFragment : Fragment(), SongAdapter.OnItemClickListener {
 
                 viewModel.updateSearchedSongList(tempSearchList);
             }
-
         })
+
+
+        // Access the RecyclerView Adapter and load the data into it
+        songAdapter = SongAdapter(this, ArrayList<AudioFileModel>(), this.context!!)
+        rv_scan_list.adapter = songAdapter;
+
+
+
 
 
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-        if (StoragePermissionHelper.handlePermissions(activity))
-            viewModel.startScan(activity as NavigationPageActivity)
-
-        mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(activity)
-
+        Log.d(TAG,"OnActivityCreated");
+        mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(activity as NavigationPageActivity)
+        viewModel = ViewModelProviders.of(activity!!).get(SongViewModel::class.java)
+        viewModel.searchedSongList.observe(this, Observer { data ->
+            Log.d(TAG,"observed searchedSongList change" + data!!.size);
+            if (songAdapter!=null) {
+                Log.d(TAG,"updating songadapter list..")
+                songAdapter.updateList(data);
+            }
+        });
     }
 
 
@@ -109,7 +117,7 @@ class MainFragment : Fragment(), SongAdapter.OnItemClickListener {
         var audioFile : AudioFileModel
         if (viewModel.searchedSongList!=null && viewModel.searchedSongList.value!=null) {
             audioFile = viewModel.searchedSongList.value!![pos]
-            mMediaHelper.setSong(audioFile).play()
+            mMediaHelper.setSong(audioFile).togglePlay()
         }
 
     }

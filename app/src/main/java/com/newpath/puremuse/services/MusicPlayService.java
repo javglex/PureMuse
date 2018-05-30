@@ -72,7 +72,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
 //                stopSelf();
 //                break;
 //            case PLAY_MUSIC_ACTION:
-//                Log.i(TAG,"play music action");
+//                Log.i(TAG,"togglePlay music action");
 //
 //                break;
 //            case STOP_MUSIC_ACTION:
@@ -298,9 +298,10 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                         mMediaPlayer.release();
                         initMediaPlayer();
                         mMediaPlayer.setDataSource(getApplicationContext(),uri);
+                        return;
                     }
-
                     initMediaSessionMetadata(extras);
+
 
                 } catch (IOException e) {
                     return;
@@ -312,6 +313,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                     e.printStackTrace();
                 }
                 //Work with extras here if you want
+
             }
 
 

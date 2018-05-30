@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import com.newpath.puremuse.ui.main.MainFragment
-import com.newpath.puremuse.ui.main.MainViewModel
+import com.newpath.puremuse.ui.main.SongViewModel
 import com.newpath.puremuse.helpers.StoragePermissionHelper
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -22,7 +22,7 @@ import android.os.Handler
 class MainActivity : AppCompatActivity() {
 
     var TAG:String = "MainActivity"
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: SongViewModel
     private lateinit var mMediaControllerCompatCallback: MediaControllerCompat.Callback
     private lateinit var mMediaBrowserCompatConnectionCallback: MediaBrowserCompat.ConnectionCallback
     private var mMediaBrowserCompat: MediaBrowserCompat? = null
@@ -33,14 +33,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_activity)
+        setContentView(R.layout.activity_main)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                     .replace(R.id.container, MainFragment.newInstance())
                     .commitNow()
         }
 
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(SongViewModel::class.java)
 
 //        // use this to start and trigger a service
 //        val i = Intent(this, MusicPlayService::class.java)
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
 //        mPlayPauseToggleButton!!.setOnClickListener(object : View.OnClickListener {
 //            override fun onClick(view: View) {
 //                if (mCurrentState === Constants.STATE.STATE_PAUSED) {
-//                    MediaControllerCompat.getMediaController(this@MainActivity).getTransportControls().play()
+//                    MediaControllerCompat.getMediaController(this@MainActivity).getTransportControls().togglePlay()
 //                    mCurrentState = Constants.STATE.STATE_PLAYING
 //                } else {
 //                    if (MediaControllerCompat.getMediaController(this@MainActivity).getPlaybackState().getState() === PlaybackStateCompat.STATE_PLAYING) {

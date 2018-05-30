@@ -2,36 +2,26 @@ package com.newpath.puremuse;
 
 import android.animation.ArgbEvaluator;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.ComponentName;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.RemoteException;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.MonthDisplayHelper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
-import com.newpath.puremuse.helpers.MediaStyleHelper;
-import com.newpath.puremuse.services.MusicPlayService;
+import com.newpath.puremuse.ui.main.AlbumsFragment;
 import com.newpath.puremuse.ui.main.MainFragment;
-import com.newpath.puremuse.ui.main.MainViewModel;
-import com.newpath.puremuse.utils.Constants;
+import com.newpath.puremuse.ui.main.SongViewModel;
 import com.newpath.puremuse.helpers.StoragePermissionHelper;
 
 public class NavigationPageActivity extends AppCompatActivity implements View.OnClickListener {
@@ -50,14 +40,15 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-    private FloatingActionButton fabLeft,fabCenter,fabRight;
+    private ImageButton mImgBtnLeft,mImgBtnCenter,mImgBtnRight;
+    ImageButton btnMediaAction;
     Integer[] colors = null;
     ArgbEvaluator argbEvaluator = new ArgbEvaluator();
     Toolbar mToolbar;
     MenuItem mItemSearch;
     MenuItem mItemSettings;
     MenuItem mItemProfile;
-    private MainViewModel viewModel;
+    private SongViewModel viewModel;
     private MediaPlayerHelper mMediaHelper;
 
 
@@ -65,7 +56,9 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_page);
+        viewModel = ViewModelProviders.of(this).get(SongViewModel.class);
 
+        Log.d(TAG,"onCreate");
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -74,8 +67,13 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(1); //begin in middle
         mViewPager.addOnPageChangeListener(new CustomOnPageChangeListener());
+        mImgBtnLeft = findViewById(R.id.btn_album);
+        mImgBtnCenter = findViewById(R.id.btn_explore);
+        mImgBtnRight= findViewById(R.id.btn_playlist);
+        mImgBtnLeft.setOnClickListener(this);
+        mImgBtnCenter.setOnClickListener(this);
+        mImgBtnRight.setOnClickListener(this);
 
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
        /* if (!hasRecordingPermission())
         {
@@ -87,22 +85,36 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
 
 
         initToolbar();
+        initViews();
         /*
             background transformation by http://kubaspatny.github.io/2014/09/18/viewpager-background-transition/
          */
         setUpColors();
+        scanFiles();
 
         mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(this);
        //mediaHelper.setSong();
     }
 
+    public void initViews(){
+        //retrieve button from small media player
+        btnMediaAction = findViewById(R.id.btn_media_action);
+        btnMediaAction.setOnClickListener(this);
+
+    }
 
     private void initToolbar(){
         mToolbar=(Toolbar) findViewById(R.id.toolbar_nav);
         mToolbar.setTitle(mSectionsPagerAdapter.getPageTitle(1));
+        mToolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
         setSupportActionBar(mToolbar);
     }
 
+    private void scanFiles(){
+        if (StoragePermissionHelper.handlePermissions(this))
+            viewModel.startScan(this);
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -118,10 +130,22 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         mItemProfile.setVisible(true);
         return true;
     }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        Log.d(TAG,"onStop");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+    }
     @Override
     public void onDestroy(){
         super.onDestroy();
-
+        Log.d(TAG,"onDestroy");
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -142,6 +166,18 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     @Override
     public void onClick(View v) {
         switch (v.getId()){
+            case R.id.btn_media_action:
+                mMediaHelper.togglePlay();
+                break;
+            case R.id.btn_album:
+                mViewPager.setCurrentItem(0,true);
+                break;
+            case R.id.btn_explore:
+                mViewPager.setCurrentItem(1,true);
+                break;
+            case R.id.btn_playlist:
+                mViewPager.setCurrentItem(2,true);
+                break;
             default:
                 break;
         }
@@ -154,9 +190,9 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
 
     private void setUpColors(){
 
-        Integer color1 = ContextCompat.getColor(getApplicationContext(),R.color.colorOrange);
+        Integer color1 = ContextCompat.getColor(getApplicationContext(),R.color.colorSecondary);
         Integer color2 = ContextCompat.getColor(getApplicationContext(),R.color.colorPrimary);
-        Integer color3 = ContextCompat.getColor(getApplicationContext(),R.color.colorPrimaryDark);
+        Integer color3 = ContextCompat.getColor(getApplicationContext(),R.color.colorThird);
 
         Integer[] colors_temp = {color1, color2, color3};
         colors = colors_temp;
@@ -228,11 +264,11 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position) {
                 case 0:
-                    return MainFragment.Companion.newInstance();
+                    return AlbumsFragment.newInstance();
                 case 1:
                     return MainFragment.Companion.newInstance();
                 case 2:
-                    return MainFragment.Companion.newInstance();
+                    return AlbumsFragment.newInstance();
                 default:
                     return MainFragment.Companion.newInstance();
             }
@@ -249,11 +285,11 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Users";
+                    return "Albums";
                 case 1:
-                    return "DreamChat";
+                    return "PureMuse";
                 case 2:
-                    return "Profile";
+                    return "Playlists";
             }
             return null;
         }

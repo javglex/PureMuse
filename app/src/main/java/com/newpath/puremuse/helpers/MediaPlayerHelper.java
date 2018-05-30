@@ -53,11 +53,21 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
     }
 
-    public void play(){
+    public void togglePlay(){
         try {
-            MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
+            if (mCurrentState == Constants.STATE.STATE_PAUSED) {
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
+                mCurrentState = Constants.STATE.STATE_PLAYING;
+
+            }
+            else if (mCurrentState == Constants.STATE.STATE_PLAYING) {
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+                mCurrentState = Constants.STATE.STATE_PAUSED;
+
+            }
+
         }catch(Exception e){
-            Log.e(TAG,"play() " + e);
+            Log.e(TAG,"togglePlay() " + e);
         }
 
     }
@@ -66,7 +76,7 @@ public class MediaPlayerHelper implements LifecycleObserver {
         Uri pathUri = Uri.parse(audioFile.getPath());
         Bundle mediaBundle = new Bundle();
         mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME,audioFile.getAlbum());
-        mediaBundle.putString(Constants.MediaBundle.SONG_TITLE,audioFile.getTitle());
+        mediaBundle.putString(Constants.MediaBundle.SONG_TITLE,audioFile.getDisplayName());
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(pathUri, mediaBundle);
 
         return sMediaPlayerHelper;
@@ -94,6 +104,8 @@ public class MediaPlayerHelper implements LifecycleObserver {
                         break;
                 }
 
+                Log.d(TAG,"state: " + mCurrentState);
+
             }
         };
     }
@@ -108,8 +120,8 @@ public class MediaPlayerHelper implements LifecycleObserver {
                     mMediaControllerCompat = new MediaControllerCompat(mActivity, mMediaBrowserCompat.getSessionToken());
                     mMediaControllerCompat.registerCallback(mMediaControllerCompatCallback);
                     MediaControllerCompat.setMediaController(mActivity, mMediaControllerCompat);
-                    Uri pathUri = Uri.parse("/storage/emulated/0/Music/eMusic/Various Artists/Doing It in Lagos_ Boogie, Pop & Disco in 1980's Nigeria/13 Where Is the Answer.mp3");
-                    MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(pathUri, null);
+//                    Uri pathUri = Uri.parse("/storage/emulated/0/Music/eMusic/Various Artists/Doing It in Lagos_ Boogie, Pop & Disco in 1980's Nigeria/13 Where Is the Answer.mp3");
+//                    MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(pathUri, null);
 
                 } catch (RemoteException e) {
 
@@ -135,7 +147,7 @@ public class MediaPlayerHelper implements LifecycleObserver {
 //        mPlayPauseToggleButton!!.setOnClickListener(object : View.OnClickListener {
 //            override fun onClick(view: View) {
 //                if (mCurrentState === Constants.STATE.STATE_PAUSED) {
-//                    MediaControllerCompat.getMediaController(this@MainActivity).getTransportControls().play()
+//                    MediaControllerCompat.getMediaController(this@MainActivity).getTransportControls().togglePlay()
 //                    mCurrentState = Constants.STATE.STATE_PLAYING
 //                } else {
 //                    if (MediaControllerCompat.getMediaController(this@MainActivity).getPlaybackState().getState() === PlaybackStateCompat.STATE_PLAYING) {

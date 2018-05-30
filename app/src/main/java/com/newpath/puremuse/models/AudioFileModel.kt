@@ -1,5 +1,9 @@
 package com.newpath.puremuse.models
 
+
+/**
+ * Keeps track of everything that makes a music file. Name, album, path etc.
+ */
 class AudioFileModel {
 
     var _id: String

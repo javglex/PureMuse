@@ -8,20 +8,19 @@ import android.arch.lifecycle.LiveData
 import android.util.Log
 import android.view.ViewGroup
 import com.newpath.puremuse.R
+import com.newpath.puremuse.interfaces.OnItemClickListener
 import com.newpath.puremuse.models.AudioFileModel
 import kotlinx.android.synthetic.main.item_list_song.view.*
 
-class SongAdapter(val listener: SongAdapter.OnItemClickListener, val items : ArrayList<AudioFileModel>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
+class SongAdapter(val listener: OnItemClickListener, val items : ArrayList<AudioFileModel>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
-    interface OnItemClickListener {
-        fun onItemClicked(position: Int)
-    }
 
     private val TAG:String = "SongAdapter";
 
 
     fun updateList(list: ArrayList<AudioFileModel>){
-
+        if (items==null)
+            return;
         items.clear()       //clear list
         for (item in list){
             items.add(item);        //repopulate list
