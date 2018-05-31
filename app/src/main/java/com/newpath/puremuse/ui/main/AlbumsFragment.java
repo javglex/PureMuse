@@ -6,6 +6,8 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +23,7 @@ import android.widget.RelativeLayout;
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.AlbumsAdapter;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
+import com.newpath.puremuse.models.AlbumModel;
 import com.newpath.puremuse.models.AudioFileModel;
 
 import java.util.ArrayList;
@@ -93,6 +96,17 @@ public class AlbumsFragment extends Fragment implements OnItemClickListener {
 
     @Override
     public void onItemClicked(int position) {
+
+        if (viewModel.getAlbumList()!=null && viewModel.getAlbumList().getValue()!=null) {
+
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            SongListFragment fragment = SongListFragment.newInstance(position);
+            fragmentTransaction.replace(R.id.fl_fragments, fragment);
+            fragmentTransaction.addToBackStack("MainFragment");
+            fragmentTransaction.commit();
+        }
+
 
     }
 

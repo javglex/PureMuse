@@ -40,7 +40,6 @@ public class MediaStyleHelper {
                 .setSubText(description.getDescription())
                 .setLargeIcon(description.getIconBitmap())
                 .setContentIntent(controller.getSessionActivity())
-                .setOngoing(true)
                 .setVibrate(new long[]{0L})
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)

@@ -7,6 +7,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -73,15 +74,6 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         mImgBtnLeft.setOnClickListener(this);
         mImgBtnCenter.setOnClickListener(this);
         mImgBtnRight.setOnClickListener(this);
-
-
-       /* if (!hasRecordingPermission())
-        {
-            requestPermissions();
-        }
-        if (!hasLocationPermission()){
-            requestPermissions();
-        }*/
 
 
         initToolbar();
@@ -185,6 +177,10 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
 
     @Override
     public void onBackPressed(){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0)
+            fragmentManager.popBackStackImmediate();
+        else super.onBackPressed();
         //exitDialog();
     }
 
@@ -266,11 +262,11 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
                 case 0:
                     return AlbumsFragment.newInstance();
                 case 1:
-                    return MainFragment.Companion.newInstance();
+                    return MainFragment.Companion.newInstance(-1);
                 case 2:
                     return AlbumsFragment.newInstance();
                 default:
-                    return MainFragment.Companion.newInstance();
+                    return MainFragment.Companion.newInstance(-1);
             }
 
         }

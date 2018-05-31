@@ -24,7 +24,7 @@ class SongViewModel : ViewModel() {
     val scannedSongList: LiveData<ArrayList<AudioFileModel>>
         get() = _scannedSongList
 
-    //List of filtered scanned song list in device
+    //List of searched songs from list
     private val _searchedSongList = MutableLiveData<ArrayList<AudioFileModel>>()
     val searchedSongList: LiveData<ArrayList<AudioFileModel>>
         get() = _searchedSongList
@@ -41,24 +41,34 @@ class SongViewModel : ViewModel() {
         _albumList.value = ArrayList<AlbumModel>()
     }
 
+    /**
+     * updates list of songs in device
+     */
     fun updateScannedSongList(list: ArrayList<AudioFileModel>){
         Log.d(TAG,"updateScannedSongList data set changed");
         Log.d(TAG,"updateScannedSongList size: " + list.size);
         _scannedSongList.value = list;
         Log.d(TAG,"_scannedSongList size: " + _scannedSongList.value!!.size);
-
-        initSearchedSongList();
         generateAlbums()
+        initSearchedSongList();
+
     }
 
+    /**
+     * updates list of songs you can search from
+     */
     private fun initSearchedSongList(){
         _searchedSongList.value = scannedSongList.value;
     }
 
+    /**
+     * updates list of songs that have been successfully found from search
+     */
     fun updateSearchedSongList(list: ArrayList<AudioFileModel>){
         Log.d(TAG,"updateSearchedSongList data set changed");
         _searchedSongList.value = list;
     }
+
 
     /**
      * scans the device for valid audio files

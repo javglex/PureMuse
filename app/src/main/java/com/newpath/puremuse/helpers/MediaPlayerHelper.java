@@ -64,6 +64,9 @@ public class MediaPlayerHelper implements LifecycleObserver {
                 MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
                 mCurrentState = Constants.STATE.STATE_PAUSED;
 
+            } else if (mCurrentState == Constants.STATE.STATE_STOPPED){
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
+                mCurrentState = Constants.STATE.STATE_PLAYING;
             }
 
         }catch(Exception e){
@@ -72,7 +75,16 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
     }
 
+    public void play(){
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().stop();
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
+        mCurrentState = Constants.STATE.STATE_PLAYING;
+
+    }
+
     public MediaPlayerHelper setSong(AudioFileModel audioFile){
+        Log.d(TAG,"name: " + audioFile.getDisplayName());
+
         Uri pathUri = Uri.parse(audioFile.getPath());
         Bundle mediaBundle = new Bundle();
         mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME,audioFile.getAlbum());
@@ -91,20 +103,23 @@ public class MediaPlayerHelper implements LifecycleObserver {
                 if (state == null) {
                     return;
                 }
+                Log.d(TAG,"onPlaybackStateChange: " + state);
 
                 switch(state.getState()){
                     case PlaybackStateCompat.STATE_PLAYING:
                         mCurrentState = Constants.STATE.STATE_PLAYING;
-
                         break;
                     case PlaybackStateCompat.STATE_PAUSED:
                         mCurrentState = Constants.STATE.STATE_PAUSED;
+                        break;
+                    case PlaybackStateCompat.STATE_STOPPED:
+                        mCurrentState = Constants.STATE.STATE_STOPPED;
                         break;
                     default:
                         break;
                 }
 
-                Log.d(TAG,"state: " + mCurrentState);
+                Log.d(TAG,"mcurrentstate: " + mCurrentState);
 
             }
         };
@@ -162,8 +177,10 @@ public class MediaPlayerHelper implements LifecycleObserver {
     }
 
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    public void onDestroy(){
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    public void onStop(){
+
+        Log.d(TAG,"onStop");
 
         if( MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
             MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
@@ -171,6 +188,30 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
         if (mMediaBrowserCompat != null) {
             mMediaBrowserCompat.disconnect();
+            mMediaBrowserCompat = null;
+        }
+        if (mMediaControllerCompatCallback!=null){
+            mMediaControllerCompatCallback.onSessionDestroyed();
+
+        }
+    }
+
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    public void onDestroy(){
+        Log.d(TAG,"onDestroy");
+
+        if( MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
+            MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+        }
+
+        if (mMediaBrowserCompat != null) {
+            mMediaBrowserCompat.disconnect();
+            mMediaBrowserCompat = null;
+        }
+        if (mMediaControllerCompatCallback!=null){
+            mMediaControllerCompatCallback.onSessionDestroyed();
+
         }
     }
 

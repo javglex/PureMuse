@@ -21,6 +21,7 @@ public class Constants {
     public interface STATE {
         String STATE_PAUSED = "com.newpath.puremuse.services.PAUSED";
         String STATE_PLAYING = "com.newpath.puremuse.services.PLAYING";
+        String STATE_STOPPED = "com.newpath.puremuse.services.STOPPED";
     }
 
     public interface NOTIFICATION_ID {

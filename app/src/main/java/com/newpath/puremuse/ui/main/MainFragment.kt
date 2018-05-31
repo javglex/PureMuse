@@ -30,9 +30,18 @@ import kotlinx.android.synthetic.main.fragment_main.*
 class MainFragment : Fragment(), OnItemClickListener {
 
     var TAG: String = "MainFragment"
+    internal var mAlbumPosition: Int = 0
 
     companion object {
-        fun newInstance() = MainFragment()
+        val ALBUMPOSKEY = "ALBUMPOSITION"
+
+        fun newInstance(pos: Int) : MainFragment {
+            val newFrag = MainFragment()
+            val args = Bundle()
+            args.putInt(ALBUMPOSKEY, pos)
+            newFrag.setArguments(args)
+            return newFrag
+        }
     }
 
     private lateinit var viewModel: SongViewModel
@@ -41,6 +50,10 @@ class MainFragment : Fragment(), OnItemClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mAlbumPosition = arguments!!.getInt(ALBUMPOSKEY, -1)
+        Log.d(TAG, "album position: $mAlbumPosition")
+
+
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -108,6 +121,7 @@ class MainFragment : Fragment(), OnItemClickListener {
                 songAdapter.updateList(data);
             }
         });
+
     }
 
 
@@ -117,7 +131,9 @@ class MainFragment : Fragment(), OnItemClickListener {
         var audioFile : AudioFileModel
         if (viewModel.searchedSongList!=null && viewModel.searchedSongList.value!=null) {
             audioFile = viewModel.searchedSongList.value!![pos]
-            mMediaHelper.setSong(audioFile).togglePlay()
+            Log.d(TAG, "name: " + audioFile.displayName)
+
+            mMediaHelper.setSong(audioFile).play()
         }
 
     }
