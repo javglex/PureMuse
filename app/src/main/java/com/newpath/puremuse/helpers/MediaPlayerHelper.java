@@ -5,22 +5,20 @@ import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.LifecycleObserver;
 import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.ComponentName;
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
-import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.widget.Button;
 
-import com.newpath.puremuse.NavigationPageActivity;
 import com.newpath.puremuse.models.AudioFileModel;
 import com.newpath.puremuse.services.MusicPlayService;
 import com.newpath.puremuse.utils.Constants;
+
+import java.util.ArrayList;
 
 public class MediaPlayerHelper implements LifecycleObserver {
 
@@ -33,7 +31,8 @@ public class MediaPlayerHelper implements LifecycleObserver {
     private Button mPlayPauseToggleButton = null;
     private String mCurrentState = Constants.STATE.STATE_PAUSED;
     private Activity mActivity;
-
+    private int mCurrentUriIndex;                         //currently playing index of song in the list
+    private ArrayList<AudioFileModel> mAudioFileQueue;
 
     public static MediaPlayerHelper getMediaPlayerInstance(final Activity activity){
         if (sMediaPlayerHelper==null)
@@ -82,6 +81,8 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
     }
 
+
+
     public MediaPlayerHelper setSong(AudioFileModel audioFile){
         Log.d(TAG,"name: " + audioFile.getDisplayName());
 
@@ -89,6 +90,22 @@ public class MediaPlayerHelper implements LifecycleObserver {
         Bundle mediaBundle = new Bundle();
         mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME,audioFile.getAlbum());
         mediaBundle.putString(Constants.MediaBundle.SONG_TITLE,audioFile.getDisplayName());
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(pathUri, mediaBundle);
+
+        return sMediaPlayerHelper;
+    }
+
+    public MediaPlayerHelper setSongs(ArrayList<AudioFileModel> audioFiles, int startingPos){
+
+        mAudioFileQueue = audioFiles;
+        mCurrentUriIndex = startingPos;
+        Bundle mediaBundle = new Bundle();
+        mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME, mAudioFileQueue.get(mCurrentUriIndex).getAlbum());
+        mediaBundle.putString(Constants.MediaBundle.SONG_TITLE, mAudioFileQueue.get(mCurrentUriIndex).getDisplayName());
+
+
+        Uri pathUri = Uri.parse(mAudioFileQueue.get(mCurrentUriIndex).getPath());
+
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(pathUri, mediaBundle);
 
         return sMediaPlayerHelper;
@@ -114,6 +131,16 @@ public class MediaPlayerHelper implements LifecycleObserver {
                         break;
                     case PlaybackStateCompat.STATE_STOPPED:
                         mCurrentState = Constants.STATE.STATE_STOPPED;
+                        break;
+                    case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+                        mCurrentState = Constants.STATE.STATE_SKIPPING_TO_NEXT;
+                        setSong(mAudioFileQueue.get(getNextIndex(mCurrentUriIndex)));
+                        play();
+                        break;
+                    case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
+                        mCurrentState = Constants.STATE.STATE_SKIPPING_TO_PREVIOUS;
+                        setSong(mAudioFileQueue.get(getPreviousIndex(mCurrentUriIndex)));
+                        play();
                         break;
                     default:
                         break;
@@ -176,6 +203,23 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
     }
 
+
+    public int getNextIndex(int currentIndex){
+        if (++currentIndex >= mAudioFileQueue.size()){
+            mCurrentUriIndex = 0;
+        } else mCurrentUriIndex = currentIndex;
+
+        return mCurrentUriIndex;
+    }
+
+
+    public int getPreviousIndex(int currentIndex){
+        if (--currentIndex < 0 ){
+            mCurrentUriIndex = mAudioFileQueue.size()-1;
+        } else mCurrentUriIndex = currentIndex;
+
+        return mCurrentUriIndex;
+    }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     public void onStop(){

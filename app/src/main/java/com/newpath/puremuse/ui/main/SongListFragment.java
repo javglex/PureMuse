@@ -96,11 +96,8 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
     public void onItemClicked(int position) {
         Log.d(TAG,"position clicked: " + position);
 
-        AudioFileModel audioFile ;
         if (viewModel.getAlbumList()!=null && viewModel.getAlbumList().getValue()!=null) {
-            audioFile = viewModel.getAlbumList().getValue().get(mAlbumPosition).getSongList().get(position);
-            Log.d(TAG,"name: " + audioFile.getDisplayName());
-            mMediaHelper.setSong(audioFile).play();
+            mMediaHelper.setSongs(viewModel.getAlbumList().getValue().get(mAlbumPosition).getSongList(), position).play();
         }
     }
 

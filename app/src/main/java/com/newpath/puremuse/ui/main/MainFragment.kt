@@ -128,12 +128,9 @@ class MainFragment : Fragment(), OnItemClickListener {
     override fun onItemClicked(pos:Int) {
         Log.d(TAG,"position clicked: " + pos);
 
-        var audioFile : AudioFileModel
         if (viewModel.searchedSongList!=null && viewModel.searchedSongList.value!=null) {
-            audioFile = viewModel.searchedSongList.value!![pos]
-            Log.d(TAG, "name: " + audioFile.displayName)
 
-            mMediaHelper.setSong(audioFile).play()
+            mMediaHelper.setSongs(viewModel.searchedSongList.value!!, pos).play()
         }
 
     }

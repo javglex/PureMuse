@@ -16,12 +16,16 @@ public class Constants {
     public interface MediaBundle{
         String ALBUM_NAME = "com.truiton.foregroundservice.action.main.ALBUM_NAME";
         String SONG_TITLE = "com.truiton.foregroundservice.action.main.SONG_TITLE";
+        String SONG_LIST = "com.truiton.foregroundservice.action.main.SONG_LIST";
+        String START_SONG_POS = "com.truiton.foregroundservice.action.main.START_SONG_POS";
     }
 
     public interface STATE {
         String STATE_PAUSED = "com.newpath.puremuse.services.PAUSED";
         String STATE_PLAYING = "com.newpath.puremuse.services.PLAYING";
         String STATE_STOPPED = "com.newpath.puremuse.services.STOPPED";
+        String STATE_SKIPPING_TO_PREVIOUS = "com.newpath.puremuse.services.STATE_SKIPPING_TO_PREVIOUS";
+        String STATE_SKIPPING_TO_NEXT = "com.newpath.puremuse.services.STATE_SKIPPING_TO_NEXT";
     }
 
     public interface NOTIFICATION_ID {

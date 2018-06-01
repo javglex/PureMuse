@@ -31,6 +31,7 @@ import com.newpath.puremuse.utils.Constants;
 import com.newpath.puremuse.helpers.MediaStyleHelper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -46,7 +47,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
     private MediaPlayer mMediaPlayer;
     private MediaSessionCompat mMediaSessionCompat;
     private BroadcastReceiver mNoisyReceiver;
-    private Uri mCurrentPlayingURI;
+    private Uri mCurrentPlayingURI;         //URI of song currently playing
     private MediaSessionCompat.Callback mMediaSessionCallback;
 
     @Override
@@ -291,10 +292,23 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 super.onStop();
                 Log.d(TAG,"onStop()");
 
-                mMediaPlayer.stop();
-                setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
                 //after media player stops, the object gets released. Recreate Media player object
-                mMediaPlayer = MediaPlayer.create(MusicPlayService.this, mCurrentPlayingURI);
+                if (mCurrentPlayingURI!=null)
+                    mMediaPlayer = MediaPlayer.create(MusicPlayService.this, mCurrentPlayingURI);
+
+            }
+
+            @Override
+            public void onSkipToNext(){
+                Log.d(TAG,"onSkipToNext");
+                setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
+
+            }
+
+            @Override
+            public void onSkipToPrevious(){
+                Log.d(TAG,"onSkipToPrevious");
+                setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS);
 
             }
 
@@ -319,7 +333,10 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             public void onPlayFromUri(Uri uri, Bundle extras) {
                 super.onPlayFromUri(uri, extras);
                 Log.d(TAG,"onPlayFromUri()" + uri);
-                mCurrentPlayingURI = uri;
+
+                if (extras==null)
+                    return;
+
                 try {
 
                     try {
@@ -418,6 +435,8 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
     private void initMediaSessionMetadata(Bundle extras) {
         String albumName = extras.getString(Constants.MediaBundle.ALBUM_NAME,"");
         String songTitle = extras.getString(Constants.MediaBundle.SONG_TITLE,"");
+
+
         Log.d(TAG,"name: "+albumName);
 
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
