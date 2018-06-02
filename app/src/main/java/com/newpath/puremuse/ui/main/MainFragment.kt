@@ -130,7 +130,7 @@ class MainFragment : Fragment(), OnItemClickListener {
 
         if (viewModel.searchedSongList!=null && viewModel.searchedSongList.value!=null) {
 
-            mMediaHelper.setSongs(viewModel.searchedSongList.value!!, pos).play()
+            mMediaHelper.setSongs(viewModel.searchedSongList.value!!, pos);
         }
 
     }

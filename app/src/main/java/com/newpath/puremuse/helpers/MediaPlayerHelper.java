@@ -44,12 +44,9 @@ public class MediaPlayerHelper implements LifecycleObserver {
     private MediaPlayerHelper(final Activity activity){
 
         mActivity = activity;
-
         initConnectionCallback();
         initMediaController();
         setupMediaToggleButton();
-
-
     }
 
     public void togglePlay(){
@@ -75,7 +72,7 @@ public class MediaPlayerHelper implements LifecycleObserver {
     }
 
     public void play(){
-        MediaControllerCompat.getMediaController(mActivity).getTransportControls().stop();
+        //MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
         mCurrentState = Constants.STATE.STATE_PLAYING;
 
@@ -99,14 +96,8 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
         mAudioFileQueue = audioFiles;
         mCurrentUriIndex = startingPos;
-        Bundle mediaBundle = new Bundle();
-        mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME, mAudioFileQueue.get(mCurrentUriIndex).getAlbum());
-        mediaBundle.putString(Constants.MediaBundle.SONG_TITLE, mAudioFileQueue.get(mCurrentUriIndex).getDisplayName());
-
-
-        Uri pathUri = Uri.parse(mAudioFileQueue.get(mCurrentUriIndex).getPath());
-
-        MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(pathUri, mediaBundle);
+        setSong(audioFiles.get(startingPos));
+        //play();
 
         return sMediaPlayerHelper;
     }
@@ -221,6 +212,14 @@ public class MediaPlayerHelper implements LifecycleObserver {
         return mCurrentUriIndex;
     }
 
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    public void onStart(){
+        Log.d(TAG,"onStart");
+
+        mMediaBrowserCompat.connect();
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     public void onStop(){
 
@@ -257,6 +256,8 @@ public class MediaPlayerHelper implements LifecycleObserver {
             mMediaControllerCompatCallback.onSessionDestroyed();
 
         }
+
+        sMediaPlayerHelper=null;
     }
 
 }

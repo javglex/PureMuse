@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -52,8 +53,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent==null)
-            return super.onStartCommand(intent, flags, startId);
+
         if (intent.getAction()!=null)
             Log.i(TAG,"onstartCommand: " + intent.getAction() + " flags: " + flags  + " startid: " + startId);
         MediaButtonReceiver.handleIntent(mMediaSessionCompat, intent);
@@ -252,6 +252,8 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             }
         };
 
+        Log.d(TAG,"initated noisy receiver");
+
         mMediaSessionCallback = new MediaSessionCompat.Callback() {
 
             @Override
@@ -268,10 +270,10 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                     return;
                 }
                 Log.d(TAG,"successfullyRetrievedAudioFocus()");
-
                 mMediaSessionCompat.setActive(true);
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
                 showPlayingNotification();
+                initNoisyReceiver();
                 mMediaPlayer.start();
             }
 
@@ -291,10 +293,12 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             public void onStop(){
                 super.onStop();
                 Log.d(TAG,"onStop()");
-
-                //after media player stops, the object gets released. Recreate Media player object
-                if (mCurrentPlayingURI!=null)
-                    mMediaPlayer = MediaPlayer.create(MusicPlayService.this, mCurrentPlayingURI);
+                setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
+                mMediaSessionCompat.setActive(false);
+                mMediaPlayer.stop();
+                mMediaPlayer.reset();
+                mMediaPlayer.release();
+                mMediaPlayer = MediaPlayer.create(MusicPlayService.this,mCurrentPlayingURI);
 
             }
 
@@ -332,61 +336,71 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             @Override
             public void onPlayFromUri(Uri uri, Bundle extras) {
                 super.onPlayFromUri(uri, extras);
-                Log.d(TAG,"onPlayFromUri()" + uri);
+                Log.d(TAG,"onPlayFromUri(): " + uri);
 
-                if (extras==null)
+                if (extras==null || uri==null)
                     return;
 
-                try {
+                mMediaPlayer.stop();
+                mMediaPlayer.reset();
+                mCurrentPlayingURI = uri;
 
-                    try {
-                        mMediaPlayer.setDataSource(getApplicationContext(),uri);
-                        Log.d(TAG,"setDataSource()");
-                        initMediaSessionMetadata(extras);
-
-                    } catch (Exception e) {
-                        mMediaPlayer.release();
-                        initMediaPlayer();
-                        mMediaPlayer.setDataSource(getApplicationContext(),uri);
-                        initMediaSessionMetadata(extras);
-                        return;
-                    }
-
-                    Log.d(TAG,"initMediaSessionMetadata()");
-
-
-
-                } catch (IOException e) {
-                    return;
-                }
 
                 try {
-                    mMediaPlayer.prepare();
+                    mMediaPlayer.setDataSource(getApplicationContext(),uri);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.e(TAG,"failed to set data source. " + e.getLocalizedMessage());
+                    return;
                 }
+
+                Log.d(TAG,"setDataSource()");
+                initMediaSessionMetadata(extras);
+
+
+
+                mMediaPlayer.prepareAsync();
                 //Work with extras here if you want
 
             }
 
 
         };
-
+        Log.d(TAG,"initiated mMediaSessionCallback");
 
     }
 
 
 
     private void initMediaPlayer() {
+
         mMediaPlayer = new MediaPlayer();
+        Log.d(TAG,"created new MediaPlayer");
         mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mMediaPlayer.setVolume(1.0f, 1.0f);
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                // Do something. For example: playButton.setEnabled(true);
+                if( !successfullyRetrievedAudioFocus() ) {
+                    return;
+                }
+                Log.d(TAG,"successfullyRetrievedAudioFocus()");
+
+                mMediaSessionCompat.setActive(true);
+                setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                showPlayingNotification();
+                mMediaPlayer.start();
+            }
+        });
     }
 
     private void initMediaSession() {
+        Log.d(TAG,"initMediaSession");
+
         ComponentName mediaButtonReceiver = new ComponentName(getApplicationContext(), MediaButtonReceiver.class);
-        mMediaSessionCompat = new MediaSessionCompat(getApplicationContext(), "Tag", mediaButtonReceiver, null);
+        mMediaSessionCompat = new MediaSessionCompat(getApplicationContext(), TAG, mediaButtonReceiver, null);
 
         mMediaSessionCompat.setCallback(mMediaSessionCallback);
         mMediaSessionCompat.setFlags( MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS );
@@ -397,6 +411,8 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
         mMediaSessionCompat.setMediaButtonReceiver(pendingIntent);
 
         setSessionToken(mMediaSessionCompat.getSessionToken());
+        Log.d(TAG,"setSessionToken");
+
     }
 
     private void initNoisyReceiver() {
