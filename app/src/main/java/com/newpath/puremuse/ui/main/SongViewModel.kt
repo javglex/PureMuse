@@ -8,6 +8,8 @@ import android.util.Log
 import com.newpath.puremuse.models.AudioFileModel
 import com.newpath.puremuse.helpers.AudioFileScanner
 import com.newpath.puremuse.models.AlbumModel
+import com.newpath.puremuse.models.CollectionModel
+import com.newpath.puremuse.models.PlaylistModel
 import java.util.HashMap
 
 /**
@@ -30,15 +32,23 @@ class SongViewModel : ViewModel() {
         get() = _searchedSongList
 
     //key: album name, value: list of songs respective to album name
-    private val _albumList = MutableLiveData<ArrayList<AlbumModel>>()
-    val albumList : LiveData<ArrayList<AlbumModel>>
+    private val _albumList = MutableLiveData<ArrayList<out CollectionModel>>()
+    val albumList : LiveData<ArrayList<out CollectionModel>>
         get() = _albumList
+
+    //key: playlist name, value: list of songs respective to album name
+    private val _collectionList = MutableLiveData<ArrayList<out CollectionModel>>()
+    val collectionList : LiveData<ArrayList<out CollectionModel>>
+        get() = _collectionList
+
 
     init {
         Log.d(TAG,"init fired");
         _scannedSongList.value = ArrayList<AudioFileModel>()
         _searchedSongList.value = ArrayList<AudioFileModel>()
         _albumList.value = ArrayList<AlbumModel>()
+        _collectionList.value=ArrayList<PlaylistModel>()
+
     }
 
     /**
@@ -129,6 +139,14 @@ class SongViewModel : ViewModel() {
 
         this._albumList.value = albums;
 
+    }
+
+    private fun fetchCollectionList(){
+
+        var fetchedCollection = ArrayList<PlaylistModel>()
+        //playlistService fetchplaylists
+
+        this._collectionList.value = fetchedCollection;
     }
 
 }

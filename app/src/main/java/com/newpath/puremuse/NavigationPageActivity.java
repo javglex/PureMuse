@@ -3,11 +3,9 @@ package com.newpath.puremuse;
 import android.animation.ArgbEvaluator;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -16,14 +14,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
+import com.newpath.puremuse.adapters.SectionsPagerAdapter;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
-import com.newpath.puremuse.ui.main.AlbumsFragment;
+import com.newpath.puremuse.ui.main.CollectionsFragment;
 import com.newpath.puremuse.ui.main.MainFragment;
 import com.newpath.puremuse.ui.main.SongViewModel;
 import com.newpath.puremuse.helpers.StoragePermissionHelper;
+import com.newpath.puremuse.utils.Constants;
 
 public class NavigationPageActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -42,7 +42,8 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
      */
     private ViewPager mViewPager;
     private ImageButton mImgBtnLeft,mImgBtnCenter,mImgBtnRight;
-    ImageButton btnMediaAction;
+    private LinearLayout mLayoutMiniPlayer;
+    ImageButton mBtnMediaAction;
     Integer[] colors = null;
     ArgbEvaluator argbEvaluator = new ArgbEvaluator();
     Toolbar mToolbar;
@@ -75,24 +76,35 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         mImgBtnCenter.setOnClickListener(this);
         mImgBtnRight.setOnClickListener(this);
 
+        mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(this);
 
         initToolbar();
         initViews();
-        /*
-            background transformation by http://kubaspatny.github.io/2014/09/18/viewpager-background-transition/
-         */
         setUpColors();
         scanFiles();
 
-        mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(this);
        //mediaHelper.setSong();
     }
 
     public void initViews(){
         //retrieve button from small media player
-        btnMediaAction = findViewById(R.id.btn_media_action);
-        btnMediaAction.setOnClickListener(this);
+        mBtnMediaAction = findViewById(R.id.btn_media_action);
+        mLayoutMiniPlayer = findViewById(R.id.ll_mini_player);
+        mBtnMediaAction.setOnClickListener(this);
 
+        mLayoutMiniPlayer.setVisibility(View.GONE);
+
+        mMediaHelper.registerPlayerState(new MediaPlayerHelper.MusicPlayerStateChange() {
+            @Override
+            public void onPlaying() {
+                mLayoutMiniPlayer.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onStopped() {
+                mLayoutMiniPlayer.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void initToolbar(){
@@ -134,11 +146,13 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         super.onResume();
 
     }
+
     @Override
     public void onDestroy(){
         super.onDestroy();
         Log.d(TAG,"onDestroy");
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -153,7 +167,6 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
 
         return super.onOptionsItemSelected(item);
     }
-
 
     @Override
     public void onClick(View v) {
@@ -184,6 +197,9 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         //exitDialog();
     }
 
+    /**
+    *  background transformation by http://kubaspatny.github.io/2014/09/18/viewpager-background-transition/
+    */
     private void setUpColors(){
 
         Integer color1 = ContextCompat.getColor(getApplicationContext(),R.color.colorSecondary);
@@ -195,7 +211,9 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
 
     }
 
-
+    /**
+     *  background transformation by http://kubaspatny.github.io/2014/09/18/viewpager-background-transition/
+     */
     private class CustomOnPageChangeListener implements ViewPager.OnPageChangeListener {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -244,52 +262,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
 
     }
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            switch (position) {
-                case 0:
-                    return AlbumsFragment.newInstance();
-                case 1:
-                    return MainFragment.Companion.newInstance(-1);
-                case 2:
-                    return AlbumsFragment.newInstance();
-                default:
-                    return MainFragment.Companion.newInstance(-1);
-            }
-
-        }
-
-        @Override
-        public int getCount() {
-            // Show 3 total pages.
-            return 3;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "Albums";
-                case 1:
-                    return "PureMuse";
-                case 2:
-                    return "Playlists";
-            }
-            return null;
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

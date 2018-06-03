@@ -14,10 +14,13 @@ import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.SongAdapter;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
-import com.newpath.puremuse.models.AlbumModel;
 import com.newpath.puremuse.models.AudioFileModel;
+import com.newpath.puremuse.utils.Constants;
 
 import java.util.ArrayList;
+
+import static com.newpath.puremuse.utils.Constants.COLLECTIONPOSKEY;
+import static com.newpath.puremuse.utils.Constants.COLLECTIONTYPE;
 
 /**
  * This fragment will contain a static list of songs. To be used for inside Albums, playlists etc.
@@ -25,17 +28,18 @@ import java.util.ArrayList;
 public class SongListFragment extends Fragment implements OnItemClickListener {
 
     final static String TAG = "SongListFragment";
-    final static String ALBUMPOSKEY = "ALBUMPOSITION";
     RecyclerView mRvSongList;
     SongAdapter mSongAdapter;
     SongViewModel viewModel;
-    int mAlbumPosition;
+    int mCollectionPosition;
+    int mCollectionType;
     MediaPlayerHelper mMediaHelper;
 
-    public static SongListFragment newInstance(int pos){
+    public static SongListFragment newInstance(int type, int pos){
         SongListFragment newFrag = new SongListFragment();
         Bundle args = new Bundle();
-        args.putInt(ALBUMPOSKEY,pos);
+        args.putInt(COLLECTIONPOSKEY,pos);
+        args.putInt(COLLECTIONTYPE,type);
         newFrag.setArguments(args);
         return newFrag;
     }
@@ -45,10 +49,13 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
         super.onCreate(savedInstanceState);
         Log.d(TAG,"oncreate");
         viewModel = ViewModelProviders.of(getActivity()).get(SongViewModel.class);
-        mAlbumPosition = getArguments().getInt(ALBUMPOSKEY,-1);
+
+        mCollectionPosition = getArguments().getInt(COLLECTIONPOSKEY,-1);
+        mCollectionType = getArguments().getInt(COLLECTIONTYPE,-1);
+
         mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(getActivity());
 
-        Log.d(TAG,"album position: " + mAlbumPosition);
+        Log.d(TAG,"album position: " + mCollectionPosition);
     }
 
 
@@ -68,12 +75,23 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
         mRvSongList.setLayoutManager(mLayoutManager);
         mRvSongList.setAdapter(mSongAdapter);
         Log.d(TAG,"onViewCreated");
+        ArrayList<AudioFileModel> collection = new ArrayList<>();
 
-        ArrayList<AudioFileModel> album = viewModel.getAlbumList().getValue().get(mAlbumPosition).getSongList();
-        Log.d(TAG,"album size:" + album.size());
-        Log.d(TAG,"first song:" + album.get(0));
+        switch (mCollectionType){
+            case Constants.COLLECTION_TYPE.ALBUM:
+                collection = viewModel.getAlbumList().getValue().get(mCollectionPosition).getSongList();
+                break;
+            case Constants.COLLECTION_TYPE.PLAYLIST:
+                collection = viewModel.getCollectionList().getValue().get(mCollectionPosition).getSongList();
+                break;
 
-        mSongAdapter.updateList(album);
+        }
+
+
+        Log.d(TAG,"album size:" + collection.size());
+        Log.d(TAG,"first song:" + collection.get(0));
+
+        mSongAdapter.updateList(collection);
 
 
     }
@@ -97,7 +115,7 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
         Log.d(TAG,"position clicked: " + position);
 
         if (viewModel.getAlbumList()!=null && viewModel.getAlbumList().getValue()!=null) {
-            mMediaHelper.setSongs(viewModel.getAlbumList().getValue().get(mAlbumPosition).getSongList(), position);
+            mMediaHelper.setSongs(viewModel.getAlbumList().getValue().get(mCollectionPosition).getSongList(), position);
         }
     }
 

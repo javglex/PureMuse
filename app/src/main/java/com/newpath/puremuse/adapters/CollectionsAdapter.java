@@ -1,46 +1,39 @@
 package com.newpath.puremuse.adapters;
 
-import android.content.Context;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
-import com.newpath.puremuse.models.AlbumModel;
-import com.newpath.puremuse.models.AudioFileModel;
+import com.newpath.puremuse.models.CollectionModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHolder> {
+public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.MyViewHolder> {
 
-    public static final String TAG = "AlbumsAdapter";
-    private List<AlbumModel> list;
+    public static final String TAG = "CollectionsAdapter";
+    private List<CollectionModel> list;
 
     OnItemClickListener mOnItemClickListener;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvAlbumName, tvSongCount;
+        public TextView tvCollectionName, tvSongCount;
         public ImageView imgAlbumCover;
 
         public MyViewHolder(View view) {
             super(view);
-            tvAlbumName = view.findViewById(R.id.tv_album_title);
+            tvCollectionName = view.findViewById(R.id.tv_album_title);
             tvSongCount = view.findViewById(R.id.tv_song_count);
             imgAlbumCover = view.findViewById(R.id.img_album_art);
         }
     }
 
-    public AlbumsAdapter(List<AlbumModel> list, OnItemClickListener listener) {
+    public CollectionsAdapter(List<CollectionModel> list, OnItemClickListener listener) {
         this.list = list;
         if (list==null)
             this.list = new ArrayList<>();
@@ -69,10 +62,10 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
     public void onBindViewHolder(MyViewHolder holder, final int position) {
         if (list.size()==0)
             return;
-        AlbumModel album = list.get(position);
+        CollectionModel collection = list.get(position);
 
-        holder.tvSongCount.setText(""+album.getSongList().size());
-        holder.tvAlbumName.setText(album.getAlbumName());
+        holder.tvSongCount.setText(""+collection.getSongList().size());
+        holder.tvCollectionName.setText(collection.getCollectionName());
 
 //        holder.tvHoursUntil.setText(userSlot.getHoursUntilAlarm() + " hours until alarm");
 //        holder.tvLocation.setText(userSlot.getlCoordinates().toString());
@@ -95,10 +88,10 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
 
 
 
-    public void updateList(ArrayList<AlbumModel> list){
+    public void updateList(ArrayList<CollectionModel> list){
 
         this.list.clear() ;      //clear list
-        for (AlbumModel item : list){
+        for (CollectionModel item : list){
             this.list.add(item);        //repopulate list
         }
         notifyDataSetChanged();

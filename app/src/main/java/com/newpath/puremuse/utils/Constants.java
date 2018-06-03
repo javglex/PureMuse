@@ -32,6 +32,14 @@ public class Constants {
         int FOREGROUND_SERVICE = 333;
     }
 
+    public interface COLLECTION_TYPE{
+        int ALBUM = 0;
+        int PLAYLIST = 1;
+    }
+
+    public final static String COLLECTIONPOSKEY = "COLLECTIONPOSKEY";          //position of collection to be opened, whether it is an album or a playlist
+    public final static String COLLECTIONTYPE = "COLLECTIONTYPE";      //is it an album or a playlist? (0 or 1?)
+
     public static final String CHANNEL_ID = "com.newpath.puremuse.channel";
 
 }

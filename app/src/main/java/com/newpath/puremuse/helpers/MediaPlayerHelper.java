@@ -33,6 +33,7 @@ public class MediaPlayerHelper implements LifecycleObserver {
     private Activity mActivity;
     private int mCurrentUriIndex;                         //currently playing index of song in the list
     private ArrayList<AudioFileModel> mAudioFileQueue;
+    private MusicPlayerStateChange mStateChange;
 
     public static MediaPlayerHelper getMediaPlayerInstance(final Activity activity){
         if (sMediaPlayerHelper==null)
@@ -44,6 +45,18 @@ public class MediaPlayerHelper implements LifecycleObserver {
     private MediaPlayerHelper(final Activity activity){
 
         mActivity = activity;
+        mStateChange = new MusicPlayerStateChange() {
+            @Override
+            public void onPlaying() {
+
+            }
+
+            @Override
+            public void onStopped() {
+
+            }
+        };
+
         initConnectionCallback();
         initMediaController();
         setupMediaToggleButton();
@@ -116,12 +129,14 @@ public class MediaPlayerHelper implements LifecycleObserver {
                 switch(state.getState()){
                     case PlaybackStateCompat.STATE_PLAYING:
                         mCurrentState = Constants.STATE.STATE_PLAYING;
+                        mStateChange.onPlaying();
                         break;
                     case PlaybackStateCompat.STATE_PAUSED:
                         mCurrentState = Constants.STATE.STATE_PAUSED;
                         break;
                     case PlaybackStateCompat.STATE_STOPPED:
                         mCurrentState = Constants.STATE.STATE_STOPPED;
+                        mStateChange.onStopped();
                         break;
                     case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
                         mCurrentState = Constants.STATE.STATE_SKIPPING_TO_NEXT;
@@ -194,6 +209,9 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
     }
 
+    public void registerPlayerState(MusicPlayerStateChange stateChange){
+        mStateChange = stateChange;
+    }
 
     public int getNextIndex(int currentIndex){
         if (++currentIndex >= mAudioFileQueue.size()){
@@ -258,6 +276,11 @@ public class MediaPlayerHelper implements LifecycleObserver {
         }
 
         sMediaPlayerHelper=null;
+    }
+
+    public interface MusicPlayerStateChange{
+        public void onPlaying();
+        public void onStopped();
     }
 
 }

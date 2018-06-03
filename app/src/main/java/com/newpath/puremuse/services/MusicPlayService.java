@@ -298,8 +298,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 mMediaPlayer.stop();
                 mMediaPlayer.reset();
                 mMediaPlayer.release();
-                mMediaPlayer = MediaPlayer.create(MusicPlayService.this,mCurrentPlayingURI);
-
+                initMediaPlayer();
             }
 
             @Override
@@ -341,9 +340,11 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 if (extras==null || uri==null)
                     return;
 
+
+                mCurrentPlayingURI = uri;
+
                 mMediaPlayer.stop();
                 mMediaPlayer.reset();
-                mCurrentPlayingURI = uri;
 
 
                 try {
@@ -479,7 +480,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
         builder.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_play, "Play", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
         builder.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_next, "Next", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
 
-        builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(2).setMediaSession(mMediaSessionCompat.getSessionToken()));
+        builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(1).setMediaSession(mMediaSessionCompat.getSessionToken()));
         builder.setSmallIcon(R.mipmap.ic_launcher);
         NotificationManagerCompat.from(this).notify(1, builder.build());
     }
@@ -495,7 +496,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
         builder.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_pause, "Pause", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_PLAY_PAUSE)));
         builder.addAction(new NotificationCompat.Action(android.R.drawable.ic_media_next, "Next", MediaButtonReceiver.buildMediaButtonPendingIntent(this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT)));
 
-        builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(2).setMediaSession(mMediaSessionCompat.getSessionToken()));
+        builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(1).setMediaSession(mMediaSessionCompat.getSessionToken()));
         builder.setSmallIcon(R.mipmap.ic_launcher);
         NotificationManagerCompat.from(MusicPlayService.this).notify(1, builder.build());
     }

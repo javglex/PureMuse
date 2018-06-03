@@ -1,48 +1,42 @@
 package com.newpath.puremuse.ui.main;
 
-import android.animation.LayoutTransition;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.newpath.puremuse.R;
-import com.newpath.puremuse.adapters.AlbumsAdapter;
+import com.newpath.puremuse.adapters.CollectionsAdapter;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
-import com.newpath.puremuse.models.AlbumModel;
-import com.newpath.puremuse.models.AudioFileModel;
+import com.newpath.puremuse.models.CollectionModel;
+import com.newpath.puremuse.utils.Constants;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
+import static com.newpath.puremuse.utils.Constants.COLLECTIONTYPE;
 
 /**
  * Displays Albums that are generated in ui.main.SongViewModel
  */
-public class AlbumsFragment extends Fragment implements OnItemClickListener {
+public class CollectionsFragment extends Fragment implements OnItemClickListener {
 
-    final String TAG = "AlbumsFragment";
-    RecyclerView mRvAlbums;
-    AlbumsAdapter mAlbumsAdapter;
+    final String TAG = "CollectionsFragment";
+    RecyclerView mRvCollections;
+    CollectionsAdapter mCollectionsAdapter;
     SongViewModel viewModel;
+    int mCollectionType;
 
-    public static AlbumsFragment newInstance(){
-        AlbumsFragment newFrag = new AlbumsFragment();
+    public static CollectionsFragment newInstance(int type){
+        CollectionsFragment newFrag = new CollectionsFragment();
         Bundle args = new Bundle();
+        args.putInt(Constants.COLLECTIONTYPE,type);
         newFrag.setArguments(args);
         return newFrag;
     }
@@ -52,6 +46,8 @@ public class AlbumsFragment extends Fragment implements OnItemClickListener {
         super.onCreate(savedInstanceState);
         viewModel = ViewModelProviders.of(getActivity()).get(SongViewModel.class);
         Log.d(TAG,"oncreate");
+        mCollectionType = getArguments().getInt(COLLECTIONTYPE,-1);
+
 
     }
 
@@ -59,25 +55,38 @@ public class AlbumsFragment extends Fragment implements OnItemClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        View rootView = inflater.inflate(R.layout.fragment_albums, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_collections, container, false);
         return rootView;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState){
 
-        mRvAlbums = (RecyclerView) view.findViewById(R.id.rv_albums);
-        mAlbumsAdapter = new AlbumsAdapter(null, this);
+        mRvCollections = (RecyclerView) view.findViewById(R.id.rv_albums);
+        mCollectionsAdapter = new CollectionsAdapter(null, this);
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(),2);
-        mRvAlbums.setLayoutManager(mLayoutManager);
-        mRvAlbums.setAdapter(mAlbumsAdapter);
+        mRvCollections.setLayoutManager(mLayoutManager);
+        mRvCollections.setAdapter(mCollectionsAdapter);
         Log.d(TAG,"onViewCreated");
 
-        viewModel.getAlbumList().observe(this, albums -> {
-            Log.d(TAG,"observable fired");
-            Log.d(TAG,"observale song list size: "+albums.size());
-            mAlbumsAdapter.updateList(albums);
-        });
+
+        switch (mCollectionType){
+            case Constants.COLLECTION_TYPE.ALBUM:
+                viewModel.getAlbumList().observe(this, albums -> {
+                    Log.d(TAG,"observable fired");
+                    Log.d(TAG,"observale song list size: "+albums.size());
+                    mCollectionsAdapter.updateList((ArrayList<CollectionModel>) albums);
+                });                break;
+            case Constants.COLLECTION_TYPE.PLAYLIST:
+                viewModel.getCollectionList().observe(this, playlists -> {
+                    Log.d(TAG,"observable fired");
+                    Log.d(TAG,"observale song list size: "+playlists.size());
+                    mCollectionsAdapter.updateList((ArrayList<CollectionModel>) playlists);
+                });                break;
+
+        }
+
+
     }
 
     @Override
@@ -101,7 +110,7 @@ public class AlbumsFragment extends Fragment implements OnItemClickListener {
 
             FragmentManager fragmentManager = getFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            SongListFragment fragment = SongListFragment.newInstance(position);
+            SongListFragment fragment = SongListFragment.newInstance(Constants.COLLECTION_TYPE.ALBUM,position);
             fragmentTransaction.replace(R.id.fl_fragments, fragment);
             fragmentTransaction.addToBackStack("MainFragment");
             fragmentTransaction.commit();
