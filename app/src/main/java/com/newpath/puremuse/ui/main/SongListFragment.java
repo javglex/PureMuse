@@ -77,15 +77,9 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
         Log.d(TAG,"onViewCreated");
         ArrayList<AudioFileModel> collection = new ArrayList<>();
 
-        switch (mCollectionType){
-            case Constants.COLLECTION_TYPE.ALBUM:
-                collection = viewModel.getAlbumList().getValue().get(mCollectionPosition).getSongList();
-                break;
-            case Constants.COLLECTION_TYPE.PLAYLIST:
-                collection = viewModel.getCollectionList().getValue().get(mCollectionPosition).getSongList();
-                break;
 
-        }
+        collection = viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList();
+
 
 
         Log.d(TAG,"album size:" + collection.size());
@@ -114,8 +108,10 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
     public void onItemClicked(int position) {
         Log.d(TAG,"position clicked: " + position);
 
-        if (viewModel.getAlbumList()!=null && viewModel.getAlbumList().getValue()!=null) {
-            mMediaHelper.setSongs(viewModel.getAlbumList().getValue().get(mCollectionPosition).getSongList(), position);
+        if (viewModel.getCollection(mCollectionType)!=null && viewModel.getCollection(mCollectionType).get(mCollectionPosition)!=null) {
+
+            mMediaHelper.setSongs(viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList(), position);
+
         }
     }
 

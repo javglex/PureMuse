@@ -69,22 +69,11 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
         mRvCollections.setAdapter(mCollectionsAdapter);
         Log.d(TAG,"onViewCreated");
 
-
-        switch (mCollectionType){
-            case Constants.COLLECTION_TYPE.ALBUM:
-                viewModel.getAlbumList().observe(this, albums -> {
-                    Log.d(TAG,"observable fired");
-                    Log.d(TAG,"observale song list size: "+albums.size());
-                    mCollectionsAdapter.updateList((ArrayList<CollectionModel>) albums);
-                });                break;
-            case Constants.COLLECTION_TYPE.PLAYLIST:
-                viewModel.getCollectionList().observe(this, playlists -> {
-                    Log.d(TAG,"observable fired");
-                    Log.d(TAG,"observale song list size: "+playlists.size());
-                    mCollectionsAdapter.updateList((ArrayList<CollectionModel>) playlists);
-                });                break;
-
-        }
+        viewModel.getCollectionObservable(mCollectionType).observe(this, playlists -> {
+            Log.d(TAG,"observable fired");
+            Log.d(TAG,"observale song list size: "+playlists.size());
+            mCollectionsAdapter.updateList((ArrayList<CollectionModel>) playlists);
+        });
 
 
     }

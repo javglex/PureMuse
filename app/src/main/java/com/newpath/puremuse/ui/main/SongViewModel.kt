@@ -10,6 +10,7 @@ import com.newpath.puremuse.helpers.AudioFileScanner
 import com.newpath.puremuse.models.AlbumModel
 import com.newpath.puremuse.models.CollectionModel
 import com.newpath.puremuse.models.PlaylistModel
+import com.newpath.puremuse.utils.Constants
 import java.util.HashMap
 
 /**
@@ -37,9 +38,9 @@ class SongViewModel : ViewModel() {
         get() = _albumList
 
     //key: playlist name, value: list of songs respective to album name
-    private val _collectionList = MutableLiveData<ArrayList<out CollectionModel>>()
-    val collectionList : LiveData<ArrayList<out CollectionModel>>
-        get() = _collectionList
+    private val _playList = MutableLiveData<ArrayList<out CollectionModel>>()
+    val playList : LiveData<ArrayList<out CollectionModel>>
+        get() = _playList
 
 
     init {
@@ -47,8 +48,26 @@ class SongViewModel : ViewModel() {
         _scannedSongList.value = ArrayList<AudioFileModel>()
         _searchedSongList.value = ArrayList<AudioFileModel>()
         _albumList.value = ArrayList<AlbumModel>()
-        _collectionList.value=ArrayList<PlaylistModel>()
+        _playList.value=ArrayList<PlaylistModel>()
 
+    }
+
+    public fun getCollection(type:Int): ArrayList<out CollectionModel>? {
+        when (type){
+            Constants.COLLECTION_TYPE.PLAYLIST -> return _playList.value;
+            Constants.COLLECTION_TYPE.ALBUM -> return _albumList.value;
+        }
+
+        return null;
+    }
+
+    public fun getCollectionObservable(type:Int): MutableLiveData<ArrayList<out CollectionModel>>? {
+        when (type){
+            Constants.COLLECTION_TYPE.PLAYLIST -> return _playList;
+            Constants.COLLECTION_TYPE.ALBUM -> return _albumList;
+        }
+
+        return null;
     }
 
     /**
@@ -141,12 +160,12 @@ class SongViewModel : ViewModel() {
 
     }
 
-    private fun fetchCollectionList(){
+    private fun fetchPlayList(){
 
         var fetchedCollection = ArrayList<PlaylistModel>()
         //playlistService fetchplaylists
 
-        this._collectionList.value = fetchedCollection;
+        this._playList.value = fetchedCollection;
     }
 
 }
