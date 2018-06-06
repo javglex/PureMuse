@@ -7,12 +7,14 @@ import android.view.View
 import android.arch.lifecycle.LiveData
 import android.util.Log
 import android.view.ViewGroup
+import android.widget.ImageButton
 import com.newpath.puremuse.R
 import com.newpath.puremuse.interfaces.OnItemClickListener
 import com.newpath.puremuse.models.AudioFileModel
 import kotlinx.android.synthetic.main.item_list_song.view.*
+import com.newpath.puremuse.interfaces.OnOptionsClickListener
 
-class SongAdapter(val listener: OnItemClickListener, val items : ArrayList<AudioFileModel>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
+class SongAdapter(val listener: OnItemClickListener, val optionsClickListener: OnOptionsClickListener, val items : ArrayList<AudioFileModel>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
 
     private val TAG:String = "SongAdapter";
@@ -45,6 +47,8 @@ class SongAdapter(val listener: OnItemClickListener, val items : ArrayList<Audio
             Log.d(TAG, "position clicked in listener = " + holder.adapterPosition)
             listener.onItemClicked(holder.adapterPosition);
         }
+
+
         return holder
     }
 
@@ -55,6 +59,9 @@ class SongAdapter(val listener: OnItemClickListener, val items : ArrayList<Audio
         holder?.tvTitle?.text = items.get(position).displayName
         holder?.tvAlbum?.text = items.get(position).album
         holder?.tvArtist?.text = items.get(position).artist;
+        holder?.btnOptions?.setOnClickListener {
+            optionsClickListener.onOptionsClicked(holder.adapterPosition);
+        }
     }
 }
 
@@ -63,4 +70,6 @@ class ViewHolder (view: View) : RecyclerView.ViewHolder(view) {
     val tvTitle = view.tv_title
     var tvAlbum = view.tv_album
     var tvArtist = view.tv_artist
+    var btnOptions: ImageButton = view.btn_options;
+
 }

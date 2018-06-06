@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.CollectionsAdapter;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
+import com.newpath.puremuse.interfaces.OnOptionsClickListener;
 import com.newpath.puremuse.models.CollectionModel;
 import com.newpath.puremuse.utils.Constants;
 
@@ -25,7 +27,7 @@ import static com.newpath.puremuse.utils.Constants.COLLECTIONTYPE;
 /**
  * Displays Albums that are generated in ui.main.SongViewModel
  */
-public class CollectionsFragment extends Fragment implements OnItemClickListener {
+public class CollectionsFragment extends Fragment implements OnItemClickListener, OnOptionsClickListener {
 
     final String TAG = "CollectionsFragment";
     RecyclerView mRvCollections;
@@ -63,8 +65,11 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
     public void onViewCreated(View view, Bundle savedInstanceState){
 
         mRvCollections = (RecyclerView) view.findViewById(R.id.rv_albums);
-        mCollectionsAdapter = new CollectionsAdapter(null, this);
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(),2);
+        mCollectionsAdapter = new CollectionsAdapter(null, this, this);
+        RecyclerView.LayoutManager mLayoutManager;
+
+        mLayoutManager = new GridLayoutManager(getActivity(),2);
+
         mRvCollections.setLayoutManager(mLayoutManager);
         mRvCollections.setAdapter(mCollectionsAdapter);
         Log.d(TAG,"onViewCreated");
@@ -95,11 +100,11 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
     @Override
     public void onItemClicked(int position) {
 
-        if (viewModel.getAlbumList()!=null && viewModel.getAlbumList().getValue()!=null) {
+        if (viewModel.getCollection(mCollectionType)!=null) {
 
             FragmentManager fragmentManager = getFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            SongListFragment fragment = SongListFragment.newInstance(Constants.COLLECTION_TYPE.ALBUM,position);
+            SongListFragment fragment = SongListFragment.newInstance(mCollectionType,position);
             fragmentTransaction.replace(R.id.fl_fragments, fragment);
             fragmentTransaction.addToBackStack("MainFragment");
             fragmentTransaction.commit();
@@ -109,4 +114,9 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
     }
 
 
+    @Override
+    public void onOptionsClicked(int position) {
+        Log.d(TAG,"position clicked: " + position);
+
+    }
 }

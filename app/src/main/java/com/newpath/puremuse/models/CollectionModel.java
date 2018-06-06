@@ -7,7 +7,15 @@ public class CollectionModel {
     String collectionName;
     ArrayList<AudioFileModel> songList;
 
-    public CollectionModel(){}
+    public CollectionModel(String name){
+        this.collectionName = name;
+        songList = new ArrayList<>();
+    }
+
+    public CollectionModel(String name, ArrayList<AudioFileModel> songList){
+        this.collectionName = name;
+        this.songList = songList;
+    }
 
     public void setSongList(ArrayList<AudioFileModel> songList){
         if (songList==null)

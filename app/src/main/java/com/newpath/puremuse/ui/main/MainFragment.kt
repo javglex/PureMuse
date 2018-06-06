@@ -21,16 +21,21 @@ import com.newpath.puremuse.helpers.MediaPlayerHelper
 import com.newpath.puremuse.models.AudioFileModel
 import com.newpath.puremuse.helpers.StoragePermissionHelper
 import com.newpath.puremuse.interfaces.OnItemClickListener
+import com.newpath.puremuse.interfaces.OnOptionsClickListener
+import com.newpath.puremuse.utils.Constants
 import kotlinx.android.synthetic.main.fragment_main.*
 
 
 /**
  * Home fragment. For now it just shows the user songs from his device.
  */
-class MainFragment : Fragment(), OnItemClickListener {
+class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
 
     var TAG: String = "MainFragment"
     internal var mAlbumPosition: Int = 0
+    private lateinit var viewModel: SongViewModel
+    private lateinit var songAdapter: SongAdapter
+    private lateinit var mMediaHelper: MediaPlayerHelper;
 
     companion object {
         val ALBUMPOSKEY = "ALBUMPOSITION"
@@ -43,10 +48,6 @@ class MainFragment : Fragment(), OnItemClickListener {
             return newFrag
         }
     }
-
-    private lateinit var viewModel: SongViewModel
-    private lateinit var songAdapter: SongAdapter
-    private lateinit var mMediaHelper: MediaPlayerHelper;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,7 +101,7 @@ class MainFragment : Fragment(), OnItemClickListener {
 
 
         // Access the RecyclerView Adapter and load the data into it
-        songAdapter = SongAdapter(this, ArrayList<AudioFileModel>(), this.context!!)
+        songAdapter = SongAdapter(this, this, ArrayList<AudioFileModel>(), this.context!!)
         rv_scan_list.adapter = songAdapter;
 
 
@@ -135,6 +136,17 @@ class MainFragment : Fragment(), OnItemClickListener {
 
     }
 
+    override fun onOptionsClicked(position: Int) {
+        Log.d(TAG,"position clicked: " + position);
+        val fragmentManager = fragmentManager
+        val fragmentTransaction = fragmentManager!!.beginTransaction()
+        val song = viewModel.searchedSongList.value!![position]
+
+        val fragment = SongOptionsFragment.newInstance(song)
+        fragmentTransaction.add(R.id.fl_fragments, fragment)
+        fragmentTransaction.addToBackStack("SongOptionsFragment")
+        fragmentTransaction.commit()
+    }
 
 
 //    override fun onClick(view: View){

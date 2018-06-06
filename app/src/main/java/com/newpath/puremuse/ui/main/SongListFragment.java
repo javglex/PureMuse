@@ -3,6 +3,8 @@ package com.newpath.puremuse.ui.main;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,6 +16,7 @@ import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.SongAdapter;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
+import com.newpath.puremuse.interfaces.OnOptionsClickListener;
 import com.newpath.puremuse.models.AudioFileModel;
 import com.newpath.puremuse.utils.Constants;
 
@@ -25,7 +28,7 @@ import static com.newpath.puremuse.utils.Constants.COLLECTIONTYPE;
 /**
  * This fragment will contain a static list of songs. To be used for inside Albums, playlists etc.
  */
-public class SongListFragment extends Fragment implements OnItemClickListener {
+public class SongListFragment extends Fragment implements OnItemClickListener, OnOptionsClickListener {
 
     final static String TAG = "SongListFragment";
     RecyclerView mRvSongList;
@@ -70,7 +73,7 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
     public void onViewCreated(View view, Bundle savedInstanceState){
 
         mRvSongList = (RecyclerView) view.findViewById(R.id.rv_scan_list);
-        mSongAdapter = new SongAdapter(this, new ArrayList<AudioFileModel>(), getContext());
+        mSongAdapter = new SongAdapter(this,this, new ArrayList<AudioFileModel>(), getContext());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRvSongList.setLayoutManager(mLayoutManager);
         mRvSongList.setAdapter(mSongAdapter);
@@ -83,7 +86,8 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
 
 
         Log.d(TAG,"album size:" + collection.size());
-        Log.d(TAG,"first song:" + collection.get(0));
+        if (collection.size()>0)
+            Log.d(TAG,"first song:" + collection.get(0));
 
         mSongAdapter.updateList(collection);
 
@@ -116,4 +120,17 @@ public class SongListFragment extends Fragment implements OnItemClickListener {
     }
 
 
+    @Override
+    public void onOptionsClicked(int position) {
+        Log.d(TAG,"position clicked: " + position);
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        AudioFileModel song = viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList().get(position);
+
+        SongOptionsFragment fragment = SongOptionsFragment.newInstance(song);
+        fragmentTransaction.add(R.id.fl_fragments, fragment);
+        fragmentTransaction.addToBackStack("SongOptionsFragment");
+        fragmentTransaction.commit();
+    }
 }

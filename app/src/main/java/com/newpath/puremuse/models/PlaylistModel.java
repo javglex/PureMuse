@@ -10,12 +10,11 @@ public class PlaylistModel extends CollectionModel {
 
 
     public PlaylistModel(String name){
-        this.collectionName=name;
+        super(name);
     }
 
     public PlaylistModel(String name, ArrayList<AudioFileModel> songList){
-        this.songList = songList;
-        this.collectionName=name;
+        super(name,songList);
     }
 
     public void addSong(AudioFileModel song){

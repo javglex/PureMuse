@@ -11,13 +11,12 @@ import java.util.ArrayList;
 public class AlbumModel extends CollectionModel {
 
 
-    public AlbumModel(){
-
+    public AlbumModel(String name){
+        super(name);
     }
 
     public AlbumModel(String name, ArrayList<AudioFileModel> songs){
-        this.collectionName = name;
-        this.songList = songs;
+        super(name,songs);
     }
 
 

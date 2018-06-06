@@ -1,5 +1,6 @@
 package com.newpath.puremuse.adapters;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,40 +17,35 @@ import com.newpath.puremuse.models.CollectionModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.MyViewHolder> {
-
+public class AddToCollectionAdapter extends RecyclerView.Adapter<AddToCollectionAdapter.MyViewHolder>  {
     public static final String TAG = "CollectionsAdapter";
     private List<CollectionModel> list;
-
     OnItemClickListener mOnItemClickListener;
-    OnOptionsClickListener mOnOptionsClickListener;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvCollectionName, tvSongCount;
-        public ImageView imgAlbumCover;
-        public ImageButton btnOptions;
+        public TextView tvCollectionName, tvInfo;
+
 
         public MyViewHolder(View view) {
             super(view);
-            tvCollectionName = view.findViewById(R.id.tv_album_title);
-            tvSongCount = view.findViewById(R.id.tv_song_count);
-            imgAlbumCover = view.findViewById(R.id.img_album_art);
-            btnOptions = view.findViewById(R.id.btn_options);
+            tvCollectionName = view.findViewById(R.id.tv_collection_name);
+            tvInfo = view.findViewById(R.id.tv_info);
         }
     }
 
-    public CollectionsAdapter(List<CollectionModel> list, OnItemClickListener listener, OnOptionsClickListener optionsClickListener) {
+
+    public AddToCollectionAdapter(List<CollectionModel> list, OnItemClickListener listener) {
         this.list = list;
         if (list==null)
             this.list = new ArrayList<>();
         this.mOnItemClickListener = listener;
-        this.mOnOptionsClickListener = optionsClickListener;
     }
 
+    @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_list_album, parent, false);
+                .inflate(R.layout.item_list_add_collection, parent, false);
 
         final MyViewHolder holder = new MyViewHolder(itemView);
 
@@ -60,35 +56,18 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
             }
         }));
 
-        holder.btnOptions.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mOnOptionsClickListener.onOptionsClicked(holder.getAdapterPosition());
-            }
-        }));
-
-
         return holder;
+
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull AddToCollectionAdapter.MyViewHolder holder, int position) {
         if (list.size()==0)
             return;
         CollectionModel collection = list.get(position);
 
-        holder.tvSongCount.setText(""+collection.getSongList().size());
         holder.tvCollectionName.setText(collection.getCollectionName());
-
-//        holder.tvHoursUntil.setText(userSlot.getHoursUntilAlarm() + " hours until alarm");
-//        holder.tvLocation.setText(userSlot.getlCoordinates().toString());
-//        holder.tvName.setText(userSlot.getUsername());
-//        // Loading profile image
-//        Glide.with(holder.itemView.getContext()).load(userSlot.getProfilePic())
-//                .thumbnail(0.5f)
-//                .bitmapTransform(new CropCircleTransformation(holder.itemView.getContext())) //https://github.com/wasabeef/glide-transformations
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .into(holder.imgProfilePic);
+        holder.tvInfo.setText("By Javier Gonzalez");
 
     }
 
@@ -99,8 +78,6 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
         return list.size();
     }
 
-
-
     public void updateList(ArrayList<CollectionModel> list){
 
         this.list.clear() ;      //clear list
@@ -109,6 +86,5 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
         }
         notifyDataSetChanged();
     }
-
 
 }

@@ -28,6 +28,17 @@ public class Constants {
         String STATE_SKIPPING_TO_NEXT = "com.newpath.puremuse.services.STATE_SKIPPING_TO_NEXT";
     }
 
+    public interface SONGPROPERTIES{
+        String PATH = "com.newpath.puremuse.PATH";
+        String DISPLAY_NAME = "com.newpath.puremuse.DISPLAY_NAME";
+        String ALBUM_TITLE = "com.newpath.puremuse.ALBUM_TITLE";
+        String _ID = "com.newpath.puremuse._ID";
+        String ARTIST = "com.newpath.puremuse.ARTIST";
+        String DURATION = "com.newpath.puremuse.DURATION";
+        String SONG_TITLE = "com.newpath.puremuse.SONG_TITLE";
+        String DATA = "com.newpath.puremuse.DATA";
+    }
+
     public interface NOTIFICATION_ID {
         int FOREGROUND_SERVICE = 333;
     }

@@ -49,6 +49,9 @@ class SongViewModel : ViewModel() {
         _searchedSongList.value = ArrayList<AudioFileModel>()
         _albumList.value = ArrayList<AlbumModel>()
         _playList.value=ArrayList<PlaylistModel>()
+        var testPlayList = ArrayList<PlaylistModel>()
+        testPlayList.add(PlaylistModel("test"));
+        _playList.value = testPlayList;
 
     }
 
