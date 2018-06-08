@@ -32,15 +32,15 @@ class SongViewModel : ViewModel() {
     val searchedSongList: LiveData<ArrayList<AudioFileModel>>
         get() = _searchedSongList
 
-    //key: album name, value: list of songs respective to album name
+    //list of albums
     private val _albumList = MutableLiveData<ArrayList<out CollectionModel>>()
     val albumList : LiveData<ArrayList<out CollectionModel>>
         get() = _albumList
 
-    //key: playlist name, value: list of songs respective to album name
-    private val _playList = MutableLiveData<ArrayList<out CollectionModel>>()
-    val playList : LiveData<ArrayList<out CollectionModel>>
-        get() = _playList
+    //list of playlists
+    private val _playlistList = MutableLiveData<ArrayList<out CollectionModel>>()
+    val playlistList : LiveData<ArrayList<out CollectionModel>>
+        get() = _playlistList
 
 
     init {
@@ -48,28 +48,37 @@ class SongViewModel : ViewModel() {
         _scannedSongList.value = ArrayList<AudioFileModel>()
         _searchedSongList.value = ArrayList<AudioFileModel>()
         _albumList.value = ArrayList<AlbumModel>()
-        _playList.value=ArrayList<PlaylistModel>()
-        var testPlayList = ArrayList<PlaylistModel>()
-        testPlayList.add(PlaylistModel("test"));
-        _playList.value = testPlayList;
+        _playlistList.value=ArrayList<PlaylistModel>()
 
     }
 
-    public fun getCollection(type:Int): ArrayList<out CollectionModel>? {
+    fun getCollection(type:Int): ArrayList<out CollectionModel>? {
         when (type){
-            Constants.COLLECTION_TYPE.PLAYLIST -> return _playList.value;
+            Constants.COLLECTION_TYPE.PLAYLIST -> return _playlistList.value;
             Constants.COLLECTION_TYPE.ALBUM -> return _albumList.value;
         }
 
         return null;
     }
 
-    public fun getCollectionObservable(type:Int): MutableLiveData<ArrayList<out CollectionModel>>? {
+    fun addPlaylist(name:String){
+        if (_playlistList.value==null)
+            return;
+        var temp: ArrayList<PlaylistModel> =(_playlistList.value as ArrayList<PlaylistModel>);
+        temp.add(PlaylistModel(name))
+        _playlistList.value=temp;
+    }
+
+    fun addToPlaylist(pos: Int, song: AudioFileModel ){
+        if (_playlistList.value!=null)
+            _playlistList.value!!.get(pos).songList.add(song);
+    }
+
+    fun getCollectionObservable(type:Int): MutableLiveData<ArrayList<out CollectionModel>>? {
         when (type){
-            Constants.COLLECTION_TYPE.PLAYLIST -> return _playList;
+            Constants.COLLECTION_TYPE.PLAYLIST -> return _playlistList;
             Constants.COLLECTION_TYPE.ALBUM -> return _albumList;
         }
-
         return null;
     }
 
@@ -168,7 +177,7 @@ class SongViewModel : ViewModel() {
         var fetchedCollection = ArrayList<PlaylistModel>()
         //playlistService fetchplaylists
 
-        this._playList.value = fetchedCollection;
+        this._playlistList.value = fetchedCollection;
     }
 
 }

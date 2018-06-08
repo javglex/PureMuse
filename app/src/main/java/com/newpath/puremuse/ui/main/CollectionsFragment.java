@@ -74,10 +74,10 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
         mRvCollections.setAdapter(mCollectionsAdapter);
         Log.d(TAG,"onViewCreated");
 
-        viewModel.getCollectionObservable(mCollectionType).observe(this, playlists -> {
-            Log.d(TAG,"observable fired");
-            Log.d(TAG,"observale song list size: "+playlists.size());
-            mCollectionsAdapter.updateList((ArrayList<CollectionModel>) playlists);
+        viewModel.getCollectionObservable(mCollectionType).observe(this, collections -> {
+            Log.d(TAG,"observable fired" + mCollectionType);
+            Log.d(TAG,"observale song list size: "+collections.size());
+            mCollectionsAdapter.updateList((ArrayList<CollectionModel>) collections);
         });
 
 
@@ -87,13 +87,16 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
     public void onResume() {
         // TODO Auto-generated method stub
         super.onResume();
-
+        Log.d(TAG,"onResume()");
     }
+
 
     @Override
     public void onPause() {
         // TODO Auto-generated method stub
         super.onPause();
+        Log.d(TAG,"onResume()");
+
     }
 
 
@@ -108,6 +111,7 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
             fragmentTransaction.replace(R.id.fl_fragments, fragment);
             fragmentTransaction.addToBackStack("MainFragment");
             fragmentTransaction.commit();
+
         }
 
 

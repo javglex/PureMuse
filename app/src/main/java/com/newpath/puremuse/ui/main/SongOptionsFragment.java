@@ -15,8 +15,12 @@ import android.widget.TextView;
 
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
+import com.newpath.puremuse.interfaces.OnFragmentResult;
 import com.newpath.puremuse.models.AudioFileModel;
+import com.newpath.puremuse.models.PlaylistModel;
 import com.newpath.puremuse.utils.Constants;
+
+import java.util.ArrayList;
 
 import static com.newpath.puremuse.utils.Constants.COLLECTIONPOSKEY;
 import static com.newpath.puremuse.utils.Constants.COLLECTIONTYPE;
@@ -95,7 +99,7 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
         String data = bundle.getString(Constants.SONGPROPERTIES.DATA,"");
         String songTitle = bundle.getString(Constants.SONGPROPERTIES.SONG_TITLE, "");
         String _id = bundle.getString(Constants.SONGPROPERTIES._ID, "");
-
+        Log.d(TAG,"song built: " + "\n" + albumTitle +"\n" + path + "\n" +displayName + "\n" +artist + "\n" +duration + "\n" +data + "\n" +songTitle + "\n" +_id);
         return new AudioFileModel(_id,artist,songTitle,data,displayName,duration,albumTitle,path);
     }
 
@@ -106,6 +110,27 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
         fragmentTransaction.replace(R.id.fl_fragments, fragment);
         fragmentTransaction.addToBackStack("AddToCollectionFragment");
         fragmentTransaction.commit();
+
+        AddToCollectionFragment.registerOnResult(new OnFragmentResult() {
+            @Override
+            public void onResult(Bundle bundle) {
+
+                int position = bundle.getInt("COLLECTIONPOS",-1);
+                if (position==-1){
+                    Log.w(TAG,"position==-1");
+                    return;
+                }
+
+                if (viewModel!=null && viewModel.getCollection(Constants.COLLECTION_TYPE.PLAYLIST)!=null)
+                {
+                    viewModel.addToPlaylist(position,mSelectedSong);
+                } else
+                    Log.e(TAG,"viewModel!=null && viewModel.getCollection(position)!=null");
+
+                getActivity().getSupportFragmentManager().popBackStack();
+
+            }
+        });
     }
 
     @Override
