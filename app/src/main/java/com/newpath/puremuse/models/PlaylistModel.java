@@ -1,13 +1,20 @@
 package com.newpath.puremuse.models;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+
 import java.util.ArrayList;
 
 /**
  * Holds songs for user created collections. Could refactor to extend AlbumModel/ A common collection module?
  */
 
+@Entity(tableName = "playlist")
 public class PlaylistModel extends CollectionModel {
 
+    public PlaylistModel(){
+        super("");
+    }
 
     public PlaylistModel(String name){
         super(name);

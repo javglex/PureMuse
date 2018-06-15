@@ -1,11 +1,21 @@
 package com.newpath.puremuse.models;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+
 import java.util.ArrayList;
 
+@Entity(tableName = "collection")
 public class CollectionModel {
 
-    String collectionName;
-    ArrayList<AudioFileModel> songList;
+    @PrimaryKey(autoGenerate = true)
+    public int uid;
+    @ColumnInfo(name = "collection_name")
+    public String collectionName;
+    @Ignore
+    protected ArrayList<AudioFileModel> songList;
 
     public CollectionModel(String name){
         this.collectionName = name;
@@ -23,7 +33,6 @@ public class CollectionModel {
         else
             this.songList = songList;
     }
-
 
     public void setCollectionName(String name){
         this.collectionName = name;

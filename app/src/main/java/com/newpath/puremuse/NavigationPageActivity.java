@@ -18,6 +18,8 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.newpath.puremuse.adapters.SectionsPagerAdapter;
+import com.newpath.puremuse.database.AppDatabase;
+import com.newpath.puremuse.helpers.DatabaseHelper;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.ui.main.CollectionsFragment;
 import com.newpath.puremuse.ui.main.MainFragment;
@@ -82,7 +84,8 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         initViews();
         setUpColors();
         scanFiles();
-
+        //test
+        DatabaseHelper.populateAsync(AppDatabase.getAppDatabase(this));
        //mediaHelper.setSong();
     }
 
@@ -150,6 +153,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     @Override
     public void onDestroy(){
         super.onDestroy();
+        AppDatabase.destroyInstance();
         Log.d(TAG,"onDestroy");
     }
 
