@@ -17,6 +17,10 @@ import com.newpath.puremuse.models.CollectionModel;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * For adding a song to a collection, playlist.
+ */
 public class AddToCollectionAdapter extends RecyclerView.Adapter<AddToCollectionAdapter.MyViewHolder>  {
     public static final String TAG = "CollectionsAdapter";
     private List<CollectionModel> list;

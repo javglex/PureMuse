@@ -10,6 +10,7 @@ import com.newpath.puremuse.helpers.AudioFileScanner
 import com.newpath.puremuse.models.AlbumModel
 import com.newpath.puremuse.models.CollectionModel
 import com.newpath.puremuse.models.PlaylistModel
+import com.newpath.puremuse.services.SongsOnDeviceService
 import com.newpath.puremuse.utils.Constants
 import java.util.HashMap
 
@@ -74,6 +75,11 @@ class SongViewModel : ViewModel() {
             _playlistList.value!!.get(pos).songList.add(song);
     }
 
+    fun setPlaylists(playlists: ArrayList<PlaylistModel> ){
+        if (_playlistList.value!=null)
+            _playlistList.value = playlists;
+    }
+
     fun getCollectionObservable(type:Int): MutableLiveData<ArrayList<out CollectionModel>>? {
         when (type){
             Constants.COLLECTION_TYPE.PLAYLIST -> return _playlistList;
@@ -92,7 +98,7 @@ class SongViewModel : ViewModel() {
         Log.d(TAG,"_scannedSongList size: " + _scannedSongList.value!!.size);
         generateAlbums()
         initSearchedSongList();
-
+        hashSongsOnDevice();
     }
 
     /**
@@ -100,6 +106,10 @@ class SongViewModel : ViewModel() {
      */
     private fun initSearchedSongList(){
         _searchedSongList.value = scannedSongList.value;
+    }
+
+    private fun hashSongsOnDevice(){
+        SongsOnDeviceService.getService().hashSongsList(scannedSongList.value)
     }
 
     /**

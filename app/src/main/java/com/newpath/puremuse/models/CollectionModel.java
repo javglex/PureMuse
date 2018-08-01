@@ -4,6 +4,9 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
+
+import com.newpath.puremuse.utils.Converters;
 
 import java.util.ArrayList;
 
@@ -14,7 +17,7 @@ public class CollectionModel {
     public int uid;
     @ColumnInfo(name = "collection_name")
     public String collectionName;
-    @Ignore
+    @ColumnInfo(name = "song_list")
     protected ArrayList<AudioFileModel> songList;
 
     public CollectionModel(String name){

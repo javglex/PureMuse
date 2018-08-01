@@ -2,6 +2,7 @@ package com.newpath.puremuse.ui.main;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.design.internal.NavigationMenuItemView;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,16 +13,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.newpath.puremuse.NavigationPageActivity;
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.AddToCollectionAdapter;
 import com.newpath.puremuse.adapters.CollectionsAdapter;
+import com.newpath.puremuse.database.AppDatabase;
+import com.newpath.puremuse.helpers.DatabaseHelper;
 import com.newpath.puremuse.interfaces.OnFragmentResult;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
 import com.newpath.puremuse.models.CollectionModel;
+import com.newpath.puremuse.models.PlaylistModel;
 import com.newpath.puremuse.utils.Constants;
 
 import java.util.ArrayList;
 
+/**
+ * lets a user add a song to an existing playlist, or create a new playlist
+ */
 public class AddToCollectionFragment extends Fragment implements OnItemClickListener {
 
     final String TAG = "AddToCollectionFragment";
@@ -95,6 +103,18 @@ public class AddToCollectionFragment extends Fragment implements OnItemClickList
         mOnFragmentResult.onResult(bundle);     //return selected playlist position
         getActivity().getSupportFragmentManager().popBackStack();
 
+        //TODO: Finish this with real playlists
+        DatabaseHelper.populateAsync((ArrayList<PlaylistModel>) viewModel.getCollection(Constants.COLLECTION_TYPE.PLAYLIST),AppDatabase.getAppDatabase(getActivity()), new DatabaseHelper.DbCallback<Void>() {
+            @Override
+            public void onFinished(Void result) {
+                Log.d(TAG,"finished db populate");
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
     }
 
 

@@ -21,12 +21,19 @@ public interface PlaylistDao {
     @Query("SELECT * FROM playlist where uid LIKE :uid")
     PlaylistModel findByUid(int uid);
 
+    @Query("DELETE FROM playlist")
+    public void nukeTable();
+
     @Query("SELECT COUNT(*) from playlist")
     int countPlaylists();
 
     @Insert
     void insertAll(PlaylistModel... playlist);
 
+    @Insert
+    void insertPlaylist(PlaylistModel playlist);
+
     @Delete
     void delete(PlaylistModel user);
+
 }

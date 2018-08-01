@@ -69,8 +69,8 @@ public class AudioFileScanner {
                         audioModel.setArtist(artist);
                         audioModel.setPath(path);
 
-                        Log.i("Name :" + name, " Album :" + album);
-                        Log.i("Path :" + path, " Artist :" + artist);
+//                        Log.i("Name :" + name, " Album :" + album);
+//                        Log.i("Path :" + path, " Artist :" + artist);
 
                         tempAudioList.add(audioModel);
                     }

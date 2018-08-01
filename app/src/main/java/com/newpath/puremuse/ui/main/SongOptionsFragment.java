@@ -100,7 +100,7 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
         String songTitle = bundle.getString(Constants.SONGPROPERTIES.SONG_TITLE, "");
         String _id = bundle.getString(Constants.SONGPROPERTIES._ID, "");
         Log.d(TAG,"song built: " + "\n" + albumTitle +"\n" + path + "\n" +displayName + "\n" +artist + "\n" +duration + "\n" +data + "\n" +songTitle + "\n" +_id);
-        return new AudioFileModel(_id,artist,songTitle,data,displayName,duration,albumTitle,path);
+        return new AudioFileModel(_id,artist,songTitle,data,displayName,duration,albumTitle,path, true);
     }
 
     private void addToCollectionFragment(){

@@ -17,11 +17,14 @@ import android.view.ViewGroup
 import com.newpath.puremuse.NavigationPageActivity
 import com.newpath.puremuse.R
 import com.newpath.puremuse.adapters.SongAdapter
+import com.newpath.puremuse.database.AppDatabase
+import com.newpath.puremuse.helpers.DatabaseHelper
 import com.newpath.puremuse.helpers.MediaPlayerHelper
 import com.newpath.puremuse.models.AudioFileModel
 import com.newpath.puremuse.helpers.StoragePermissionHelper
 import com.newpath.puremuse.interfaces.OnItemClickListener
 import com.newpath.puremuse.interfaces.OnOptionsClickListener
+import com.newpath.puremuse.models.PlaylistModel
 import com.newpath.puremuse.utils.Constants
 import kotlinx.android.synthetic.main.fragment_main.*
 
@@ -120,6 +123,25 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
             if (songAdapter!=null) {
                 Log.d(TAG,"updating songadapter list..")
                 songAdapter.updateList(data);
+            }
+        });
+
+        DatabaseHelper.retrieveAsync(AppDatabase.getAppDatabase(activity), object: DatabaseHelper.DbCallback <ArrayList<PlaylistModel>> {
+            override fun onFinished(result: java.util.ArrayList<PlaylistModel>) {
+                Log.d(TAG, "finished db retrieval")
+                Log.d(TAG, "result is of size: " + result.size)
+                if (viewModel!=null) {
+                    viewModel.setPlaylists(result);
+                    try {
+                        Log.d(TAG, "test result song: " + result.get(0).getSong(0).displayName);
+                    }catch(e:Exception){
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            override fun onError() {
+
             }
         });
 

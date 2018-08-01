@@ -1,6 +1,7 @@
 package com.newpath.puremuse;
 
 import android.animation.ArgbEvaluator;
+import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,11 +22,15 @@ import com.newpath.puremuse.adapters.SectionsPagerAdapter;
 import com.newpath.puremuse.database.AppDatabase;
 import com.newpath.puremuse.helpers.DatabaseHelper;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
+import com.newpath.puremuse.models.PlaylistModel;
+import com.newpath.puremuse.services.SongsOnDeviceService;
 import com.newpath.puremuse.ui.main.CollectionsFragment;
 import com.newpath.puremuse.ui.main.MainFragment;
 import com.newpath.puremuse.ui.main.SongViewModel;
 import com.newpath.puremuse.helpers.StoragePermissionHelper;
 import com.newpath.puremuse.utils.Constants;
+
+import java.util.ArrayList;
 
 public class NavigationPageActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -84,10 +89,9 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         initViews();
         setUpColors();
         scanFiles();
-        //test
-        DatabaseHelper.populateAsync(AppDatabase.getAppDatabase(this));
-       //mediaHelper.setSong();
+
     }
+
 
     public void initViews(){
         //retrieve button from small media player
@@ -201,6 +205,14 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         //exitDialog();
     }
 
+    public void clearBackStack(){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        int backStackCount = fragmentManager.getBackStackEntryCount();
+
+       for (int i = 0; i < backStackCount; i++)
+            fragmentManager.popBackStack();
+    }
+
     /**
     *  background transformation by http://kubaspatny.github.io/2014/09/18/viewpager-background-transition/
     */
@@ -238,7 +250,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         public void onPageSelected(int position) {
             //change menu title
             mToolbar.setTitle(mSectionsPagerAdapter.getPageTitle(position));
-
+            clearBackStack();
             //handle which menu item shows on toolbar
             switch(position){
                 case 0:
