@@ -50,6 +50,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
     private BroadcastReceiver mNoisyReceiver;
     private Uri mCurrentPlayingURI;         //URI of song currently playing
     private MediaSessionCompat.Callback mMediaSessionCallback;
+    private boolean playOnPrepare = false;      //determines whether to play song on prepare or not
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -359,10 +360,38 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 initMediaSessionMetadata(extras);
 
 
-
+                playOnPrepare = true;
                 mMediaPlayer.prepareAsync();
                 //Work with extras here if you want
 
+            }
+
+            @Override
+            public void onPrepareFromUri(Uri uri, Bundle extras){
+                Log.d(TAG,"onPrepareFromUri(): " + uri);
+
+                if (extras==null || uri==null)
+                    return;
+
+
+                mCurrentPlayingURI = uri;
+
+                mMediaPlayer.stop();
+                mMediaPlayer.reset();
+
+
+                try {
+                    mMediaPlayer.setDataSource(getApplicationContext(),uri);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e(TAG,"failed to set data source. " + e.getLocalizedMessage());
+                    return;
+                }
+
+                Log.d(TAG,"setDataSource()");
+                initMediaSessionMetadata(extras);
+                playOnPrepare = false;
+                mMediaPlayer.prepareAsync();
             }
 
 
@@ -389,6 +418,8 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 }
                 Log.d(TAG,"successfullyRetrievedAudioFocus()");
 
+                if (!playOnPrepare)
+                    return;
                 mMediaSessionCompat.setActive(true);
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
                 showPlayingNotification();
@@ -486,7 +517,15 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
     }
 
     private void showPlayingNotification() {
-        NotificationCompat.Builder builder = MediaStyleHelper.from(MusicPlayService.this, mMediaSessionCompat);
+
+        NotificationCompat.Builder builder=null;
+
+        try{
+            builder = MediaStyleHelper.from(MusicPlayService.this, mMediaSessionCompat);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
         if( builder == null ) {
             return;
         }

@@ -8,11 +8,18 @@ import android.arch.lifecycle.LiveData
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
+import com.bumptech.glide.Glide
 import com.newpath.puremuse.R
+import com.newpath.puremuse.helpers.AudioFileScanner
 import com.newpath.puremuse.interfaces.OnItemClickListener
 import com.newpath.puremuse.models.AudioFileModel
 import kotlinx.android.synthetic.main.item_list_song.view.*
 import com.newpath.puremuse.interfaces.OnOptionsClickListener
+import com.bumptech.glide.load.resource.bitmap.TransformationUtils.centerCrop
+import com.bumptech.glide.request.RequestOptions
+
+
 
 class SongAdapter(val listener: OnItemClickListener, val optionsClickListener: OnOptionsClickListener, val items : ArrayList<AudioFileModel>, val context: Context) : RecyclerView.Adapter<ViewHolder>() {
 
@@ -62,6 +69,26 @@ class SongAdapter(val listener: OnItemClickListener, val optionsClickListener: O
         holder?.btnOptions?.setOnClickListener {
             optionsClickListener.onOptionsClicked(holder.adapterPosition);
         }
+
+        var imagePath: String? = null
+        try {
+            imagePath = AudioFileScanner.getAlbumImage(items.get(position).albumId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+
+        if (imagePath == null)
+            return
+
+        val options = RequestOptions()
+        options.centerCrop()
+        // Loading profile image
+        Glide.with(holder.itemView.context).load(imagePath)
+                .thumbnail(0.5f)
+                .apply(options)
+                //.bitmapTransform(new CropCircleTransformation(holder.itemView.getContext())) //https://github.com/wasabeef/glide-transformations
+                .into(holder.imgThumb)
     }
 }
 
@@ -70,6 +97,7 @@ class ViewHolder (view: View) : RecyclerView.ViewHolder(view) {
     val tvTitle = view.tv_title
     var tvAlbum = view.tv_album
     var tvArtist = view.tv_artist
-    var btnOptions: ImageButton = view.btn_options;
+    var btnOptions: ImageButton = view.btn_options
+    var imgThumb: ImageView = view.img_thumb
 
 }

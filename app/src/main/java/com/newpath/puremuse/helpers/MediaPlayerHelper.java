@@ -50,7 +50,10 @@ public class MediaPlayerHelper implements LifecycleObserver {
             public void onPlaying() {
 
             }
+            @Override
+            public void onPaused(){
 
+            }
             @Override
             public void onStopped() {
 
@@ -93,7 +96,20 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
 
 
-    public MediaPlayerHelper setSong(AudioFileModel audioFile){
+    private MediaPlayerHelper prepareSong(AudioFileModel audioFile){
+        Log.d(TAG,"name: " + audioFile.getDisplayName());
+
+        Uri pathUri = Uri.parse(audioFile.getPath());
+        Bundle mediaBundle = new Bundle();
+        mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME,audioFile.getAlbum());
+        mediaBundle.putString(Constants.MediaBundle.SONG_TITLE,audioFile.getDisplayName());
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().prepareFromUri(pathUri, mediaBundle);
+
+        return sMediaPlayerHelper;
+    }
+
+
+    private MediaPlayerHelper prepareAndPlaySong(AudioFileModel audioFile){
         Log.d(TAG,"name: " + audioFile.getDisplayName());
 
         Uri pathUri = Uri.parse(audioFile.getPath());
@@ -109,7 +125,17 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
         mAudioFileQueue = audioFiles;
         mCurrentUriIndex = startingPos;
-        setSong(audioFiles.get(startingPos));
+        prepareSong(audioFiles.get(startingPos));
+        //play();
+
+        return sMediaPlayerHelper;
+    }
+
+    public MediaPlayerHelper setSongsAndPlay(ArrayList<AudioFileModel> audioFiles, int startingPos){
+
+        mAudioFileQueue = audioFiles;
+        mCurrentUriIndex = startingPos;
+        prepareAndPlaySong(audioFiles.get(startingPos));
         //play();
 
         return sMediaPlayerHelper;
@@ -133,6 +159,7 @@ public class MediaPlayerHelper implements LifecycleObserver {
                         break;
                     case PlaybackStateCompat.STATE_PAUSED:
                         mCurrentState = Constants.STATE.STATE_PAUSED;
+                        mStateChange.onPaused();
                         break;
                     case PlaybackStateCompat.STATE_STOPPED:
                         mCurrentState = Constants.STATE.STATE_STOPPED;
@@ -140,12 +167,12 @@ public class MediaPlayerHelper implements LifecycleObserver {
                         break;
                     case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
                         mCurrentState = Constants.STATE.STATE_SKIPPING_TO_NEXT;
-                        setSong(mAudioFileQueue.get(getNextIndex(mCurrentUriIndex)));
+                        prepareAndPlaySong(mAudioFileQueue.get(getNextIndex(mCurrentUriIndex)));
                         play();
                         break;
                     case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
                         mCurrentState = Constants.STATE.STATE_SKIPPING_TO_PREVIOUS;
-                        setSong(mAudioFileQueue.get(getPreviousIndex(mCurrentUriIndex)));
+                        prepareAndPlaySong(mAudioFileQueue.get(getPreviousIndex(mCurrentUriIndex)));
                         play();
                         break;
                     default:
@@ -280,6 +307,7 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
     public interface MusicPlayerStateChange{
         public void onPlaying();
+        public void onPaused();
         public void onStopped();
     }
 

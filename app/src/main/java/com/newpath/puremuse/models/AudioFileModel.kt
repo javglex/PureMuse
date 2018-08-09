@@ -15,8 +15,9 @@ class AudioFileModel {
     var duration: String
     var path:String
     var onDevice:Boolean
+    var albumId:Int
 
-    constructor(_id: String, artist: String,title: String, data: String,displayName: String,duration: String, album:String, path:String, onDevice:Boolean) {
+    constructor(_id: String, artist: String,title: String, data: String,displayName: String,duration: String, album:String, path:String, onDevice:Boolean, albumId:Int) {
         this._id = _id
         this.artist = artist
         this.title = title
@@ -25,7 +26,8 @@ class AudioFileModel {
         this.duration = duration
         this.album = album
         this.path = path
-        this.onDevice = onDevice;
+        this.onDevice = onDevice
+        this.albumId = albumId
     }
 
     constructor(){
@@ -38,6 +40,7 @@ class AudioFileModel {
         this.album = "n/a"
         this.path = "n/a"
         this.onDevice = false;
+        this.albumId = 0;
     }
 
     fun isOnDevice(onDevice: Boolean){

@@ -49,6 +49,7 @@ public class Constants {
     }
 
     public final static String COLLECTIONPOSKEY = "COLLECTIONPOSKEY";          //position of collection to be opened, whether it is an album or a playlist
+    public final static String SONGPOSTKEY = "SONGPOSTKEY";          //position of song inside collection to be played
     public final static String COLLECTIONTYPE = "COLLECTIONTYPE";      //is it an album or a playlist? (0 or 1?)
 
     public static final String CHANNEL_ID = "com.newpath.puremuse.channel";

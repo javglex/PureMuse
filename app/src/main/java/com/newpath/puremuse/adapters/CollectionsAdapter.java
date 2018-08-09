@@ -8,7 +8,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.newpath.puremuse.R;
+import com.newpath.puremuse.helpers.AudioFileScanner;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
 import com.newpath.puremuse.interfaces.OnOptionsClickListener;
 import com.newpath.puremuse.models.CollectionModel;
@@ -60,12 +64,12 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
             }
         }));
 
-        holder.btnOptions.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mOnOptionsClickListener.onOptionsClicked(holder.getAdapterPosition());
-            }
-        }));
+//        holder.btnOptions.setOnClickListener((new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                mOnOptionsClickListener.onOptionsClicked(holder.getAdapterPosition());
+//            }
+//        }));
 
 
         return holder;
@@ -80,15 +84,23 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
         holder.tvSongCount.setText(""+collection.getSongList().size());
         holder.tvCollectionName.setText(collection.getCollectionName());
 
-//        holder.tvHoursUntil.setText(userSlot.getHoursUntilAlarm() + " hours until alarm");
-//        holder.tvLocation.setText(userSlot.getlCoordinates().toString());
-//        holder.tvName.setText(userSlot.getUsername());
-//        // Loading profile image
-//        Glide.with(holder.itemView.getContext()).load(userSlot.getProfilePic())
-//                .thumbnail(0.5f)
-//                .bitmapTransform(new CropCircleTransformation(holder.itemView.getContext())) //https://github.com/wasabeef/glide-transformations
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .into(holder.imgProfilePic);
+        String imagePath=null;
+        try {
+            imagePath = AudioFileScanner.getAlbumImage(collection.getSongList().get(0).getAlbumId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (imagePath==null)
+                return;
+
+        RequestOptions options = new RequestOptions();
+        options.centerCrop();
+        // Loading profile image
+        Glide.with(holder.itemView.getContext()).load(imagePath)
+                .thumbnail(0.5f)
+                .apply(options)
+                .into(holder.imgAlbumCover);
 
     }
 

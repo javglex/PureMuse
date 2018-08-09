@@ -34,21 +34,18 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
     SongViewModel viewModel;
     AudioFileModel mSelectedSong;
     Button mBtnAddToPlaylist, mBtnPlaySong;
+    private MediaPlayerHelper mMediaHelper;
+    private int mSongpos, mColpos, mColType;
 
 
-
-    public static SongOptionsFragment newInstance(AudioFileModel song){
+    public static SongOptionsFragment newInstance(int coltype, int songpos, int colpos){
 
         SongOptionsFragment newFrag = new SongOptionsFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(Constants.SONGPROPERTIES.ALBUM_TITLE, song.getAlbum());
-        bundle.putString(Constants.SONGPROPERTIES.PATH, song.getPath());
-        bundle.putString(Constants.SONGPROPERTIES.DISPLAY_NAME, song.getDisplayName());
-        bundle.putString(Constants.SONGPROPERTIES.ARTIST, song.getArtist());
-        bundle.putString(Constants.SONGPROPERTIES.DURATION, song.getDuration());
-        bundle.putString(Constants.SONGPROPERTIES.DATA, song.getData());
-        bundle.putString(Constants.SONGPROPERTIES.SONG_TITLE, song.getTitle());
-        bundle.putString(Constants.SONGPROPERTIES._ID, song.get_id());
+
+        bundle.putInt(Constants.COLLECTIONPOSKEY, colpos);
+        bundle.putInt(Constants.SONGPOSTKEY, songpos);
+        bundle.putInt(Constants.COLLECTIONTYPE,coltype);
         newFrag.setArguments(bundle);
 
         return newFrag;
@@ -59,8 +56,12 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
         super.onCreate(savedInstanceState);
         Log.d(TAG,"oncreate");
         viewModel = ViewModelProviders.of(getActivity()).get(SongViewModel.class);
-
-        mSelectedSong = buildSelectedSong(getArguments());
+        mMediaHelper = MediaPlayerHelper.getMediaPlayerInstance(getActivity());
+        Bundle args = getArguments();
+        mColpos = args.getInt(Constants.COLLECTIONPOSKEY,-1);
+        mSongpos = args.getInt(Constants.SONGPOSTKEY,-1);
+        mColType = args.getInt(Constants.COLLECTIONTYPE,-1);
+        buildSelectedSong();
 
     }
 
@@ -90,17 +91,27 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
 
     }
 
-    public AudioFileModel buildSelectedSong(Bundle bundle){
-        String albumTitle = bundle.getString(Constants.SONGPROPERTIES.ALBUM_TITLE, "");
-        String path = bundle.getString(Constants.SONGPROPERTIES.PATH, "");
-        String displayName = bundle.getString(Constants.SONGPROPERTIES.DISPLAY_NAME, "");
-        String artist = bundle.getString(Constants.SONGPROPERTIES.ARTIST, "");
-        String duration = bundle.getString(Constants.SONGPROPERTIES.DURATION, "");
-        String data = bundle.getString(Constants.SONGPROPERTIES.DATA,"");
-        String songTitle = bundle.getString(Constants.SONGPROPERTIES.SONG_TITLE, "");
-        String _id = bundle.getString(Constants.SONGPROPERTIES._ID, "");
-        Log.d(TAG,"song built: " + "\n" + albumTitle +"\n" + path + "\n" +displayName + "\n" +artist + "\n" +duration + "\n" +data + "\n" +songTitle + "\n" +_id);
-        return new AudioFileModel(_id,artist,songTitle,data,displayName,duration,albumTitle,path, true);
+    public void buildSelectedSong(){
+
+        if (mColpos==-1 && mSongpos == -1 && mColType == -1) {
+            return;
+        }
+
+        if (mColType==-1 && mSongpos!=-1){
+
+            if (viewModel.getSearchedSongList()!=null && viewModel.getSearchedSongList().getValue()!=null) {
+                mSelectedSong = viewModel.getSearchedSongList().getValue().get(mSongpos);
+                mMediaHelper.setSongs(viewModel.getSearchedSongList().getValue(), mSongpos);
+            }
+
+        }else if (viewModel.getCollection(mColType)!=null && viewModel.getCollection(mColType).get(mColpos)!=null) {
+            mSelectedSong = viewModel.getCollection(mColType).get(mColpos).getSongList().get(mSongpos);
+            mMediaHelper.setSongs(viewModel.getCollection(mColType).get(mColpos).getSongList(), mSongpos);
+
+        } else
+            return;
+
+
     }
 
     private void addToCollectionFragment(){
@@ -137,6 +148,9 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_play:
+                getActivity().getSupportFragmentManager().popBackStack();
+
+                mMediaHelper.togglePlay();
 
                 break;
             case R.id.btn_add_playlist:

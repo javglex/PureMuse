@@ -2,6 +2,7 @@ package com.newpath.puremuse.ui.main;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.newpath.puremuse.NavigationPageActivity;
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.CollectionsAdapter;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
@@ -79,6 +81,7 @@ public class CollectionsFragment extends Fragment implements OnItemClickListener
             Log.d(TAG,"observale song list size: "+collections.size());
             mCollectionsAdapter.updateList((ArrayList<CollectionModel>) collections);
         });
+
 
 
     }

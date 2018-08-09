@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.provider.MediaStore
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -42,11 +43,13 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
 
     companion object {
         val ALBUMPOSKEY = "ALBUMPOSITION"
+        val ISMAIN:String = "ISMAIN";
 
         fun newInstance(pos: Int) : MainFragment {
             val newFrag = MainFragment()
             val args = Bundle()
             args.putInt(ALBUMPOSKEY, pos)
+
             newFrag.setArguments(args)
             return newFrag
         }
@@ -56,7 +59,6 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
         super.onCreate(savedInstanceState)
         mAlbumPosition = arguments!!.getInt(ALBUMPOSKEY, -1)
         Log.d(TAG, "album position: $mAlbumPosition")
-
 
     }
 
@@ -69,7 +71,6 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         // Creates a vertical Layout Manager
         rv_scan_list.layoutManager = LinearLayoutManager(activity)
 
@@ -106,9 +107,6 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
         // Access the RecyclerView Adapter and load the data into it
         songAdapter = SongAdapter(this, this, ArrayList<AudioFileModel>(), this.context!!)
         rv_scan_list.adapter = songAdapter;
-
-
-
 
 
     }
@@ -153,7 +151,7 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
 
         if (viewModel.searchedSongList!=null && viewModel.searchedSongList.value!=null) {
 
-            mMediaHelper.setSongs(viewModel.searchedSongList.value!!, pos);
+            mMediaHelper.setSongsAndPlay(viewModel.searchedSongList.value!!, pos);
         }
 
     }
@@ -164,7 +162,7 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
         val fragmentTransaction = fragmentManager!!.beginTransaction()
         val song = viewModel.searchedSongList.value!![position]
 
-        val fragment = SongOptionsFragment.newInstance(song)
+        val fragment = SongOptionsFragment.newInstance( -1,position, -1 )
         fragmentTransaction.add(R.id.fl_fragments, fragment)
         fragmentTransaction.addToBackStack("SongOptionsFragment")
         fragmentTransaction.commit()

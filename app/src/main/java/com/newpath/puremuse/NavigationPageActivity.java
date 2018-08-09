@@ -108,8 +108,13 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
             }
 
             @Override
-            public void onStopped() {
+            public void onPaused() {
                 mLayoutMiniPlayer.setVisibility(View.GONE);
+
+            }
+
+            @Override
+            public void onStopped() {
             }
         });
     }
@@ -117,7 +122,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     private void initToolbar(){
         mToolbar=(Toolbar) findViewById(R.id.toolbar_nav);
         mToolbar.setTitle(mSectionsPagerAdapter.getPageTitle(1));
-        mToolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
+        mToolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
         setSupportActionBar(mToolbar);
     }
 

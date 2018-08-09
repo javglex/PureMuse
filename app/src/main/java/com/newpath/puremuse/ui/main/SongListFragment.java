@@ -2,6 +2,7 @@ package com.newpath.puremuse.ui.main;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -12,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.newpath.puremuse.NavigationPageActivity;
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.SongAdapter;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
@@ -37,6 +39,7 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
     int mCollectionPosition;
     int mCollectionType;
     MediaPlayerHelper mMediaHelper;
+    ConstraintLayout mainLayout;
 
     public static SongListFragment newInstance(int type, int pos){
         SongListFragment newFrag = new SongListFragment();
@@ -71,12 +74,18 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState){
+        mainLayout = view.findViewById(R.id.main);
 
         mRvSongList = (RecyclerView) view.findViewById(R.id.rv_scan_list);
         mSongAdapter = new SongAdapter(this,this, new ArrayList<AudioFileModel>(), getContext());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRvSongList.setLayoutManager(mLayoutManager);
         mRvSongList.setAdapter(mSongAdapter);
+
+        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(true);
+        mainLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
+
         Log.d(TAG,"onViewCreated");
         ArrayList<AudioFileModel> collection = new ArrayList<>();
 
@@ -107,6 +116,13 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
         super.onPause();
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(false);
+    }
+
 
     @Override
     public void onItemClicked(int position) {
@@ -114,7 +130,7 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
 
         if (viewModel.getCollection(mCollectionType)!=null && viewModel.getCollection(mCollectionType).get(mCollectionPosition)!=null) {
 
-            mMediaHelper.setSongs(viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList(), position);
+            mMediaHelper.setSongsAndPlay(viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList(), position);
 
         }
     }
@@ -128,7 +144,7 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         AudioFileModel song = viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList().get(position);
 
-        SongOptionsFragment fragment = SongOptionsFragment.newInstance(song);
+        SongOptionsFragment fragment = SongOptionsFragment.newInstance(mCollectionType,position,mCollectionPosition);
         fragmentTransaction.add(R.id.fl_fragments, fragment);
         fragmentTransaction.addToBackStack("SongOptionsFragment");
         fragmentTransaction.commit();
