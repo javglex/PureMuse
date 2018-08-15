@@ -148,8 +148,15 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     }
 
     @Override
+    public void onStart(){
+        super.onStart();
+       // mMediaHelper.onStart();
+    }
+
+    @Override
     public void onStop(){
         super.onStop();
+        mMediaHelper.onStop();
         Log.d(TAG,"onStop");
     }
 
@@ -162,6 +169,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     @Override
     public void onDestroy(){
         super.onDestroy();
+        mMediaHelper.onDestroy();
         AppDatabase.destroyInstance();
         Log.d(TAG,"onDestroy");
     }

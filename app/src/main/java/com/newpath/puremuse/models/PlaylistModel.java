@@ -20,8 +20,8 @@ public class PlaylistModel extends CollectionModel {
         super(name);
     }
 
-    public PlaylistModel(String name, ArrayList<AudioFileModel> songList){
-        super(name,songList);
+    public PlaylistModel(String name, String artist, ArrayList<AudioFileModel> songList){
+        super(name,artist,songList);
     }
 
     public void addSong(AudioFileModel song){

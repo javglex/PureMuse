@@ -29,14 +29,14 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
     OnOptionsClickListener mOnOptionsClickListener;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvCollectionName, tvSongCount;
+        public TextView tvCollectionName, tvArtist;
         public ImageView imgAlbumCover;
         public ImageButton btnOptions;
 
         public MyViewHolder(View view) {
             super(view);
             tvCollectionName = view.findViewById(R.id.tv_album_title);
-            tvSongCount = view.findViewById(R.id.tv_song_count);
+            tvArtist = view.findViewById(R.id.tv_album_artist);
             imgAlbumCover = view.findViewById(R.id.img_album_art);
             btnOptions = view.findViewById(R.id.btn_options);
         }
@@ -81,7 +81,7 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
             return;
         CollectionModel collection = list.get(position);
 
-        holder.tvSongCount.setText(""+collection.getSongList().size());
+        holder.tvArtist.setText(""+collection.getCollectionArtist());
         holder.tvCollectionName.setText(collection.getCollectionName());
 
         String imagePath=null;
@@ -91,11 +91,18 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
             e.printStackTrace();
         }
 
-        if (imagePath==null)
-                return;
-
         RequestOptions options = new RequestOptions();
         options.centerCrop();
+
+        if (imagePath==null) {
+            Glide.with(holder.itemView.getContext()).load(R.drawable.ic_album_24dp)
+                    .thumbnail(0.5f)
+                    .apply(options)
+                    .into(holder.imgAlbumCover);
+            return;
+        }
+
+
         // Loading profile image
         Glide.with(holder.itemView.getContext()).load(imagePath)
                 .thumbnail(0.5f)

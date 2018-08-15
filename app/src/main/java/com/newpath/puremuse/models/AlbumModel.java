@@ -17,8 +17,8 @@ public class AlbumModel extends CollectionModel {
         super(name);
     }
 
-    public AlbumModel(String name, ArrayList<AudioFileModel> songs){
-        super(name,songs);
+    public AlbumModel(String name, String artist, ArrayList<AudioFileModel> songs){
+        super(name,artist,songs);
     }
 
 

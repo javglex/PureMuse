@@ -174,7 +174,7 @@ class SongViewModel : ViewModel() {
 
         for ((key, value) in albumMap) {
             Log.d(TAG, "key: " + key + " value: " + value.size + " first value: " + value[0].displayName)
-            var album = AlbumModel(key,value);
+            var album = AlbumModel(key,value[0].artist,value);
             albums.add(album)
         }
 

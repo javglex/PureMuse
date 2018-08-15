@@ -17,17 +17,21 @@ public class CollectionModel {
     public int uid;
     @ColumnInfo(name = "collection_name")
     public String collectionName;
+    @ColumnInfo(name = "collection_artist")
+    public String collectionArtist;
     @ColumnInfo(name = "song_list")
     protected ArrayList<AudioFileModel> songList;
 
     public CollectionModel(String name){
         this.collectionName = name;
+        this.collectionArtist = "";
         songList = new ArrayList<>();
     }
 
-    public CollectionModel(String name, ArrayList<AudioFileModel> songList){
+    public CollectionModel(String name, String artist, ArrayList<AudioFileModel> songList){
         this.collectionName = name;
         this.songList = songList;
+        this.collectionArtist=artist;
     }
 
     public void setSongList(ArrayList<AudioFileModel> songList){
@@ -43,6 +47,14 @@ public class CollectionModel {
 
     public String getCollectionName(){
         return this.collectionName;
+    }
+
+    public String getCollectionArtist() {
+        return collectionArtist;
+    }
+
+    public void setCollectionArtist(String collectionArtist) {
+        this.collectionArtist = collectionArtist;
     }
 
     public ArrayList<AudioFileModel> getSongList(){

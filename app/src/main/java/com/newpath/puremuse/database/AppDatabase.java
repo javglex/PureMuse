@@ -10,7 +10,7 @@ import com.newpath.puremuse.dao.PlaylistDao;
 import com.newpath.puremuse.models.PlaylistModel;
 import com.newpath.puremuse.utils.Converters;
 
-@Database(entities = {PlaylistModel.class}, version = 2)
+@Database(entities = {PlaylistModel.class}, version = 3)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 

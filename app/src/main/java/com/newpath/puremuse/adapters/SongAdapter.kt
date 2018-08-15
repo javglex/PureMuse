@@ -78,16 +78,22 @@ class SongAdapter(val listener: OnItemClickListener, val optionsClickListener: O
         }
 
 
-        if (imagePath == null)
-            return
-
         val options = RequestOptions()
         options.centerCrop()
+
+        if (imagePath == null) {
+            Glide.with(holder.itemView.context).load(R.drawable.ic_album_24dp)
+                    .thumbnail(0.5f)
+                    .apply(options)
+                    .into(holder.imgThumb)
+            return
+        }
+
+
         // Loading profile image
         Glide.with(holder.itemView.context).load(imagePath)
                 .thumbnail(0.5f)
                 .apply(options)
-                //.bitmapTransform(new CropCircleTransformation(holder.itemView.getContext())) //https://github.com/wasabeef/glide-transformations
                 .into(holder.imgThumb)
     }
 }

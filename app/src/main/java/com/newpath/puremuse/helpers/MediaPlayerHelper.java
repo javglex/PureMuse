@@ -13,14 +13,19 @@ import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.newpath.puremuse.R;
 import com.newpath.puremuse.models.AudioFileModel;
 import com.newpath.puremuse.services.MusicPlayService;
 import com.newpath.puremuse.utils.Constants;
 
 import java.util.ArrayList;
 
-public class MediaPlayerHelper implements LifecycleObserver {
+public class MediaPlayerHelper {
 
     private static final String TAG = "MediaPlayerHelper";
     private static MediaPlayerHelper sMediaPlayerHelper;
@@ -97,7 +102,10 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
 
     private MediaPlayerHelper prepareSong(AudioFileModel audioFile){
+
         Log.d(TAG,"name: " + audioFile.getDisplayName());
+
+        loadImageIntoMiniplayer(audioFile);
 
         Uri pathUri = Uri.parse(audioFile.getPath());
         Bundle mediaBundle = new Bundle();
@@ -111,6 +119,8 @@ public class MediaPlayerHelper implements LifecycleObserver {
 
     private MediaPlayerHelper prepareAndPlaySong(AudioFileModel audioFile){
         Log.d(TAG,"name: " + audioFile.getDisplayName());
+
+        loadImageIntoMiniplayer(audioFile);
 
         Uri pathUri = Uri.parse(audioFile.getPath());
         Bundle mediaBundle = new Bundle();
@@ -258,20 +268,22 @@ public class MediaPlayerHelper implements LifecycleObserver {
     }
 
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
     public void onStart(){
         Log.d(TAG,"onStart");
-
-        mMediaBrowserCompat.connect();
+        if (!mMediaBrowserCompat.isConnected())
+            mMediaBrowserCompat.connect();
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     public void onStop(){
 
         Log.d(TAG,"onStop");
 
-        if( MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
-            MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+        try {
+            if (MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
 
         if (mMediaBrowserCompat != null) {
@@ -285,13 +297,17 @@ public class MediaPlayerHelper implements LifecycleObserver {
     }
 
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void onDestroy(){
         Log.d(TAG,"onDestroy");
 
-        if( MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
-            MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+        try{
+            if( MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
+                MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
+
 
         if (mMediaBrowserCompat != null) {
             mMediaBrowserCompat.disconnect();
@@ -309,6 +325,33 @@ public class MediaPlayerHelper implements LifecycleObserver {
         public void onPlaying();
         public void onPaused();
         public void onStopped();
+    }
+
+    public void loadImageIntoMiniplayer(AudioFileModel song){
+
+        try {
+            LinearLayout layout = mActivity.findViewById(R.id.ll_mini_player);
+            ImageView img = layout.findViewById(R.id.img_album_cover);
+            String imagePath = AudioFileScanner.getAlbumImage(song.getAlbumId());
+            RequestOptions options = new RequestOptions();
+            options.centerCrop();
+
+            if (imagePath == null) {
+                Glide.with(img.getContext()).load(R.drawable.ic_album_24dp)
+                        .thumbnail(0.5f)
+                        .apply(options)
+                        .into(img);
+            } else {
+
+                Glide.with(img.getContext()).load(imagePath)
+                        .thumbnail(0.5f)
+                        .apply(options)
+                        .into(img);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
     }
 
 }
