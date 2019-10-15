@@ -1,22 +1,19 @@
 package com.newpath.puremuse.ui.main;
 
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.design.internal.NavigationMenuItemView;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.newpath.puremuse.NavigationPageActivity;
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.adapters.AddToCollectionAdapter;
-import com.newpath.puremuse.adapters.CollectionsAdapter;
 import com.newpath.puremuse.database.AppDatabase;
 import com.newpath.puremuse.helpers.DatabaseHelper;
 import com.newpath.puremuse.interfaces.OnFragmentResult;

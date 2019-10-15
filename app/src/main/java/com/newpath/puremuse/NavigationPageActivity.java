@@ -1,16 +1,18 @@
 package com.newpath.puremuse;
 
 import android.animation.ArgbEvaluator;
-import android.app.Activity;
-import android.arch.lifecycle.ViewModelProviders;
+
+import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,27 +22,19 @@ import android.widget.LinearLayout;
 
 import com.newpath.puremuse.adapters.SectionsPagerAdapter;
 import com.newpath.puremuse.database.AppDatabase;
-import com.newpath.puremuse.helpers.DatabaseHelper;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
-import com.newpath.puremuse.models.PlaylistModel;
-import com.newpath.puremuse.services.SongsOnDeviceService;
-import com.newpath.puremuse.ui.main.CollectionsFragment;
-import com.newpath.puremuse.ui.main.MainFragment;
 import com.newpath.puremuse.ui.main.SongViewModel;
 import com.newpath.puremuse.helpers.StoragePermissionHelper;
-import com.newpath.puremuse.utils.Constants;
-
-import java.util.ArrayList;
 
 public class NavigationPageActivity extends AppCompatActivity implements View.OnClickListener {
 
     /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
+     * The {@link PagerAdapter} that will provide
      * fragments for each of the sections. We use a
      * {@link FragmentPagerAdapter} derivative, which will keep every
      * loaded fragment in memory. If this becomes too memory intensive, it
      * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     * {@link FragmentStatePagerAdapter}.
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private static final String TAG = "NavigationPageActivity";
@@ -156,7 +150,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     @Override
     public void onStop(){
         super.onStop();
-        mMediaHelper.onStop();
+        //mMediaHelper.onStop();
         Log.d(TAG,"onStop");
     }
 

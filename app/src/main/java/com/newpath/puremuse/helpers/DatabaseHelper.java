@@ -1,15 +1,13 @@
 package com.newpath.puremuse.helpers;
 
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.newpath.puremuse.database.AppDatabase;
-import com.newpath.puremuse.models.CollectionModel;
 import com.newpath.puremuse.models.PlaylistModel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DatabaseHelper {
 

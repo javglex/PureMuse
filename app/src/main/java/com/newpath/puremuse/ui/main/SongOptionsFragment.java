@@ -1,11 +1,11 @@
 package com.newpath.puremuse.ui.main;
 
 
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,13 +17,7 @@ import com.newpath.puremuse.R;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.interfaces.OnFragmentResult;
 import com.newpath.puremuse.models.AudioFileModel;
-import com.newpath.puremuse.models.PlaylistModel;
 import com.newpath.puremuse.utils.Constants;
-
-import java.util.ArrayList;
-
-import static com.newpath.puremuse.utils.Constants.COLLECTIONPOSKEY;
-import static com.newpath.puremuse.utils.Constants.COLLECTIONTYPE;
 
 /**
  * Displays song options when user clicks on song settings. (Add to playlist, remove from playlist, etc)
@@ -101,12 +95,33 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
 
             if (viewModel.getSearchedSongList()!=null && viewModel.getSearchedSongList().getValue()!=null) {
                 mSelectedSong = viewModel.getSearchedSongList().getValue().get(mSongpos);
-                mMediaHelper.setSongs(viewModel.getSearchedSongList().getValue(), mSongpos);
             }
 
         }else if (viewModel.getCollection(mColType)!=null && viewModel.getCollection(mColType).get(mColpos)!=null) {
             mSelectedSong = viewModel.getCollection(mColType).get(mColpos).getSongList().get(mSongpos);
-            mMediaHelper.setSongs(viewModel.getCollection(mColType).get(mColpos).getSongList(), mSongpos);
+
+        } else
+            return;
+
+
+    }
+
+    public void playSelectedSong(){
+
+        if (mColpos==-1 && mSongpos == -1 && mColType == -1) {
+            return;
+        }
+
+        if (mColType==-1 && mSongpos!=-1){
+
+            if (viewModel.getSearchedSongList()!=null && viewModel.getSearchedSongList().getValue()!=null) {
+                mSelectedSong = viewModel.getSearchedSongList().getValue().get(mSongpos);
+                mMediaHelper.setSongsAndPlay(viewModel.getSearchedSongList().getValue(), mSongpos);
+            }
+
+        }else if (viewModel.getCollection(mColType)!=null && viewModel.getCollection(mColType).get(mColpos)!=null) {
+            mSelectedSong = viewModel.getCollection(mColType).get(mColpos).getSongList().get(mSongpos);
+            mMediaHelper.setSongsAndPlay(viewModel.getCollection(mColType).get(mColpos).getSongList(), mSongpos);
 
         } else
             return;
@@ -150,7 +165,7 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
             case R.id.btn_play:
                 getActivity().getSupportFragmentManager().popBackStack();
 
-                mMediaHelper.togglePlay();
+                playSelectedSong();
 
                 break;
             case R.id.btn_add_playlist:

@@ -1,9 +1,7 @@
 package com.newpath.puremuse.models;
 
-import android.arch.persistence.room.Entity;
-import android.provider.MediaStore;
+import androidx.room.Entity;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**

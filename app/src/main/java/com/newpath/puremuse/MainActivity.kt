@@ -1,7 +1,7 @@
 package com.newpath.puremuse
 
-import android.arch.lifecycle.ViewModelProviders
-import android.support.v7.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import com.newpath.puremuse.ui.main.MainFragment

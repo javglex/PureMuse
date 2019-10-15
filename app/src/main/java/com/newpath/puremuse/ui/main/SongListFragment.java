@@ -1,13 +1,13 @@
 package com.newpath.puremuse.ui.main;
 
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +20,6 @@ import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.interfaces.OnItemClickListener;
 import com.newpath.puremuse.interfaces.OnOptionsClickListener;
 import com.newpath.puremuse.models.AudioFileModel;
-import com.newpath.puremuse.utils.Constants;
 
 import java.util.ArrayList;
 
