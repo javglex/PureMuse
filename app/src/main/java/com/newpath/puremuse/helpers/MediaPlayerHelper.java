@@ -1,6 +1,8 @@
 package com.newpath.puremuse.helpers;
 
 import android.app.Activity;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -62,6 +65,11 @@ public class MediaPlayerHelper {
             }
             @Override
             public void onStopped() {
+
+            }
+
+            @Override
+            public void onSkipped() {
 
             }
         };
@@ -113,7 +121,6 @@ public class MediaPlayerHelper {
         mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME,audioFile.getAlbum());
         mediaBundle.putString(Constants.MediaBundle.SONG_TITLE,audioFile.getDisplayName());
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().prepareFromUri(pathUri, mediaBundle);
-
         return sMediaPlayerHelper;
     }
 
@@ -128,7 +135,6 @@ public class MediaPlayerHelper {
         mediaBundle.putString(Constants.MediaBundle.ALBUM_NAME,audioFile.getAlbum());
         mediaBundle.putString(Constants.MediaBundle.SONG_TITLE,audioFile.getDisplayName());
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromUri(pathUri, mediaBundle);
-
         return sMediaPlayerHelper;
     }
 
@@ -147,9 +153,12 @@ public class MediaPlayerHelper {
         mAudioFileQueue = audioFiles;
         mCurrentUriIndex = startingPos;
         prepareAndPlaySong(audioFiles.get(startingPos));
-        //play();
 
         return sMediaPlayerHelper;
+    }
+
+    public AudioFileModel getPlayedSong(){
+        return mAudioFileQueue.get(mCurrentUriIndex);
     }
 
     private void initMediaController(){
@@ -179,11 +188,13 @@ public class MediaPlayerHelper {
                     case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
                         mCurrentState = Constants.STATE.STATE_SKIPPING_TO_NEXT;
                         prepareAndPlaySong(mAudioFileQueue.get(getNextIndex(mCurrentUriIndex)));
+                        mStateChange.onSkipped();
                         play();
                         break;
                     case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
                         mCurrentState = Constants.STATE.STATE_SKIPPING_TO_PREVIOUS;
                         prepareAndPlaySong(mAudioFileQueue.get(getPreviousIndex(mCurrentUriIndex)));
+                        mStateChange.onSkipped();
                         play();
                         break;
                     default:
@@ -326,14 +337,22 @@ public class MediaPlayerHelper {
         public void onPlaying();
         public void onPaused();
         public void onStopped();
+        public void onSkipped();
     }
 
     public void loadImageIntoMiniplayer(AudioFileModel song){
 
         try {
-            LinearLayout layout = mActivity.findViewById(R.id.ll_mini_player);
+            ConstraintLayout layout = mActivity.findViewById(R.id.ll_mini_player);
+            TextView tvSongName = mActivity.findViewById(R.id.tv_song_title);
+            TextView tvAlbumName = mActivity.findViewById(R.id.tv_album_name);
             ImageView img = layout.findViewById(R.id.img_album_cover);
+
             String imagePath = AudioFileScanner.getAlbumImage(song.getAlbumId());
+
+            tvSongName.setText(song.getDisplayName());
+            tvAlbumName.setText(song.getAlbum());
+
             RequestOptions options = new RequestOptions();
             options.centerCrop();
 

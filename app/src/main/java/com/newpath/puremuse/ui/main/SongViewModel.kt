@@ -98,7 +98,7 @@ class SongViewModel : ViewModel() {
         Log.d(TAG,"_scannedSongList size: " + _scannedSongList.value!!.size);
         generateAlbums()
         initSearchedSongList();
-        hashSongsOnDevice();
+        //hashSongsOnDevice();
     }
 
     /**

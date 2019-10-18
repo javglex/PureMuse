@@ -1,5 +1,6 @@
 package com.newpath.puremuse.ui.main;
 
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -8,10 +9,14 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import com.newpath.puremuse.NavigationPageActivity;
 import com.newpath.puremuse.R;
@@ -21,6 +26,7 @@ import com.newpath.puremuse.interfaces.OnItemClickListener;
 import com.newpath.puremuse.interfaces.OnOptionsClickListener;
 import com.newpath.puremuse.models.AudioFileModel;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static com.newpath.puremuse.utils.Constants.COLLECTIONPOSKEY;
@@ -33,6 +39,7 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
 
     final static String TAG = "SongListFragment";
     RecyclerView mRvSongList;
+    EditText mEtSearchFiles;
     SongAdapter mSongAdapter;
     SongViewModel viewModel;
     int mCollectionPosition;
@@ -54,6 +61,19 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
         super.onCreate(savedInstanceState);
         Log.d(TAG,"oncreate");
         viewModel = ViewModelProviders.of(getActivity()).get(SongViewModel.class);
+        //set up observers for view model
+        viewModel.getSearchedSongList().observe(this, new Observer<ArrayList<AudioFileModel>>() {
+            @Override
+            public void onChanged(ArrayList<AudioFileModel> audioFileModels) {
+
+                Log.d(TAG,"observed searchedSongList change" + audioFileModels.size());
+                if (mSongAdapter!=null) {
+                    Log.d(TAG,"updating songadapter list..");
+                    mSongAdapter.updateList(audioFileModels);
+                }
+
+            }
+        });
 
         mCollectionPosition = getArguments().getInt(COLLECTIONPOSKEY,-1);
         mCollectionType = getArguments().getInt(COLLECTIONTYPE,-1);
@@ -74,23 +94,56 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState){
         mainLayout = view.findViewById(R.id.main);
-
+        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(true);
+        mainLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
         mRvSongList = (RecyclerView) view.findViewById(R.id.rv_scan_list);
+        mEtSearchFiles = view.findViewById(R.id.et_searchfiles);
+
+
         mSongAdapter = new SongAdapter(this,this, new ArrayList<AudioFileModel>(), getContext());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRvSongList.setLayoutManager(mLayoutManager);
         mRvSongList.setAdapter(mSongAdapter);
+        Log.d(TAG,"on adapter set");
 
-        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ((NavigationPageActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(true);
-        mainLayout.setBackgroundColor(getResources().getColor(android.R.color.black));
+        //get collection of songlist to filter through
+        final ArrayList<AudioFileModel> collection = viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList();
+        viewModel.updateSearchedSongList(collection);
 
-        Log.d(TAG,"onViewCreated");
-        ArrayList<AudioFileModel> collection = new ArrayList<>();
+        mEtSearchFiles.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.d(TAG, "beforeTextChanged: " + charSequence);
 
+            }
 
-        collection = viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList();
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int count) {
+                Log.d(TAG,"onTextChanged: "+ charSequence);
+                ArrayList<AudioFileModel> tempSearchList = new ArrayList<AudioFileModel>();
+                for (AudioFileModel song : collection){
+                    Log.d(TAG,"song searching for: "+ song);
+                    Log.d(TAG,"using string: "+ charSequence);
 
+                    if (song.toSearchableString().contains(charSequence.toString().toLowerCase())){
+                        Log.d(TAG,"match!");
+                        tempSearchList.add(song);
+                    }
+                }
+                if (count==0){      //if there is nothing in the input field. Revert to showing entire list.
+                    tempSearchList = collection;
+                }
+
+                viewModel.updateSearchedSongList(tempSearchList);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                Log.d(TAG,"afterTextChanged: "+ editable);
+
+            }
+        });
 
 
         Log.d(TAG,"album size:" + collection.size());
@@ -103,9 +156,23 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
     }
 
     @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            if (viewModel!=null) {
+                //get collection of songlist to filter through
+                final ArrayList<AudioFileModel> collection = viewModel.getCollection(mCollectionType)
+                        .get(mCollectionPosition).getSongList();
+                viewModel.updateSearchedSongList(collection);
+            }
+        }
+
+    }
+
+    @Override
     public void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
+
 
     }
 

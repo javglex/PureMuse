@@ -100,8 +100,11 @@ public class AddToCollectionFragment extends Fragment implements OnItemClickList
         mOnFragmentResult.onResult(bundle);     //return selected playlist position
         getActivity().getSupportFragmentManager().popBackStack();
 
-        //TODO: Finish this with real playlists
-        DatabaseHelper.populateAsync((ArrayList<PlaylistModel>) viewModel.getCollection(Constants.COLLECTION_TYPE.PLAYLIST),AppDatabase.getAppDatabase(getActivity()), new DatabaseHelper.DbCallback<Void>() {
+        DatabaseHelper.populateAsync(
+                (ArrayList<PlaylistModel>) viewModel.getCollection(Constants.COLLECTION_TYPE.PLAYLIST),
+                AppDatabase.getAppDatabase(getActivity()),
+                new DatabaseHelper.DbCallback<Void>() {
+
             @Override
             public void onFinished(Void result) {
                 Log.d(TAG,"finished db populate");

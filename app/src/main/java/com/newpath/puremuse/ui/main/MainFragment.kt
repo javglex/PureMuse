@@ -146,6 +146,21 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
     }
 
 
+     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+
+            if (::viewModel.isInitialized)
+                viewModel.updateSearchedSongList(viewModel.scannedSongList.value!!)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+
+    }
+
     override fun onItemClicked(pos:Int) {
         Log.d(TAG,"position clicked: " + pos);
 

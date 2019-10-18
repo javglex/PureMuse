@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
 import androidx.annotation.NonNull;
@@ -28,6 +29,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.newpath.puremuse.R;
+import com.newpath.puremuse.models.AudioFileModel;
 import com.newpath.puremuse.utils.Constants;
 import com.newpath.puremuse.helpers.MediaStyleHelper;
 
@@ -50,6 +52,12 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
     private Uri mCurrentPlayingURI;         //URI of song currently playing
     private MediaSessionCompat.Callback mMediaSessionCallback;
     private boolean playOnPrepare = false;      //determines whether to play song on prepare or not
+    private static TimeElapsed mTimeElapsedObs;
+    Handler mTimerHandler = new Handler();
+    Runnable mTimerRunnable;
+    private static float mTimeElapsed=0;
+    final int UPDATE_SPEED = 300;
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -58,47 +66,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             Log.i(TAG,"onstartCommand: " + intent.getAction() + " flags: " + flags  + " startid: " + startId);
         MediaButtonReceiver.handleIntent(mMediaSessionCompat, intent);
         return super.onStartCommand(intent, flags, startId);
-//        if (intent.getAction()==null)
-//            return Service.START_NOT_STICKY;
-//
-//        mContext = getApplicationContext();
-//
-//
-//        MediaButtonReceiver.handleIntent(mMediaSessionCompat, intent);
-//        switch(intent.getAction()){
-//            case START_ACTION:
-//                Log.i(TAG,"start action");
-//                startAction(intent);
-//                break;
-//            case END_ACTION:
-//                Log.i(TAG,"end action");
-//                stopForeground(true);
-//                stopSelf();
-//                break;
-//            case PLAY_MUSIC_ACTION:
-//                Log.i(TAG,"togglePlay music action");
-//
-//                break;
-//            case STOP_MUSIC_ACTION:
-//                Log.i(TAG,"stop music action");
-//
-//                break;
-//            case PREV_MUSIC_ACTION:
-//                Log.i(TAG,"prev music action");
-//
-//                break;
-//            case NEXT_MUSIC_ACTION:
-//                Log.i(TAG,"next music action");
-//
-//                break;
-//
-//            default:
-//                break;
-//        }
-//
-//
-//
-//        return Service.START_NOT_STICKY;
+
     }
 
     @Override
@@ -170,75 +138,6 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
         NotificationManagerCompat.from(this).cancel(1);
     }
 
-//    private void startAction(Intent intent){
-//
-//        Intent notificationIntent = new Intent(this, MainActivity.class);
-//        notificationIntent.setAction(MAIN_ACTION);
-//        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-//                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-//                notificationIntent, 0);
-//
-//        Intent previousIntent = new Intent(this, MusicPlayService.class);
-//        previousIntent.setAction(PREV_MUSIC_ACTION);
-//        PendingIntent ppreviousIntent = PendingIntent.getService(this, 0,
-//                previousIntent, 0);
-//
-//        Intent playIntent = new Intent(this, MusicPlayService.class);
-//        playIntent.setAction(PLAY_MUSIC_ACTION);
-//        PendingIntent pplayIntent = PendingIntent.getService(this, 0,
-//                playIntent, 0);
-//
-//        Intent nextIntent = new Intent(this, MusicPlayService.class);
-//        nextIntent.setAction(NEXT_MUSIC_ACTION);
-//        PendingIntent pnextIntent = PendingIntent.getService(this, 0,
-//                nextIntent, 0);
-//
-//        Bitmap icon = BitmapFactory.decodeResource(getResources(),
-//                R.mipmap.ic_sound_disc);
-//
-//        //start notification
-//
-//        Notification.Builder notification = new Notification.Builder(this)
-//                .setContentTitle("PureMuse Player")
-//                .setTicker("PureMuse Music Player")
-//                .setContentText("My Music")
-//                .setPriority(Notification.PRIORITY_HIGH)
-//                .setSmallIcon(R.drawable.ic_launcher_background)
-//                .setLargeIcon(
-//                        Bitmap.createScaledBitmap(icon, 128, 128, false)
-//                )
-//                .setContentIntent(pendingIntent)
-//                .setOngoing(true)
-//                .addAction(android.R.drawable.ic_media_previous,
-//                        "Previous", ppreviousIntent)
-//                .addAction(android.R.drawable.ic_media_play, "Play",
-//                        pplayIntent)
-//                .addAction(android.R.drawable.ic_media_next, "Next",
-//                        pnextIntent)
-//                .setStyle(new Notification.MediaStyle()
-//                        .setMediaSession(null));
-//
-//            // Create the NotificationChannel, but only on API 26+ because
-//            // the NotificationChannel class is new and not in the support library
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                CharSequence name = getString(R.string.channel_name);
-//                String description = getString(R.string.channel_description);
-//                int importance = NotificationManager.IMPORTANCE_HIGH;
-//                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-//                channel.setDescription(description);
-//                // Register the channel with the system; you can't change the importance
-//                // or other notification behaviors after this
-//                NotificationManager notificationManager = getSystemService(NotificationManager.class);
-//                notificationManager.createNotificationChannel(channel);
-//                notification.setChannelId(CHANNEL_ID);
-//            }
-//
-//        startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-//                notification.build());
-//
-//
-//    }
 
 
     public void initVariables(){
@@ -275,6 +174,8 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 showPlayingNotification();
                 initNoisyReceiver();
                 mMediaPlayer.start();
+                initTimer();
+
             }
 
             @Override
@@ -286,7 +187,10 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                     mMediaPlayer.pause();
                     setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
                     showPausedNotification();
+                    endTimerHandler();
+
                 }
+
             }
 
             @Override
@@ -299,12 +203,15 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 mMediaPlayer.reset();
                 mMediaPlayer.release();
                 initMediaPlayer();
+                endTimerHandler();
+                resetTimeElapsed();
             }
 
             @Override
             public void onSkipToNext(){
                 Log.d(TAG,"onSkipToNext");
                 setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
+                resetTimeElapsed();
 
             }
 
@@ -312,6 +219,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             public void onSkipToPrevious(){
                 Log.d(TAG,"onSkipToPrevious");
                 setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS);
+                resetTimeElapsed();
 
             }
 
@@ -362,6 +270,8 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 playOnPrepare = true;
                 mMediaPlayer.prepareAsync();
                 //Work with extras here if you want
+                resetTimeElapsed();
+                initTimer();
 
             }
 
@@ -391,6 +301,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 initMediaSessionMetadata(extras);
                 playOnPrepare = false;
                 mMediaPlayer.prepareAsync();
+
             }
 
 
@@ -537,6 +448,54 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
         builder.setStyle(new  androidx.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(1).setMediaSession(mMediaSessionCompat.getSessionToken()));
         builder.setSmallIcon(R.mipmap.ic_launcher);
         NotificationManagerCompat.from(MusicPlayService.this).notify(1, builder.build());
+    }
+
+
+    public static void registerTimeElapsed(TimeElapsed t){
+        mTimeElapsedObs = t;
+    }
+
+    public static void unregisterTimeElapsed(){
+        mTimeElapsedObs=null;
+    }
+
+    public void initTimer(){
+        endTimerHandler();    //to prevent creating multiple runnables
+
+        mTimerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                addTimeElapsed(UPDATE_SPEED);
+                mTimerHandler.postDelayed(mTimerRunnable,UPDATE_SPEED);
+                if (mTimeElapsedObs!=null){
+                    mTimeElapsedObs.onTimerFired(mTimeElapsed);
+                }
+            }
+        };
+
+        mTimerHandler.postDelayed(mTimerRunnable,0); //wait 0 ms and run
+    }
+
+    private void endTimerHandler(){
+        mTimerHandler.removeCallbacks(mTimerRunnable);
+    }
+
+    public void resetTimeElapsed(){
+        mTimeElapsed=0;
+    }
+
+    public void addTimeElapsed(float timeToAdd){
+        mTimeElapsed+=timeToAdd;
+    }
+
+    public float getTimeElapsed(){
+        return mTimeElapsed;
+    }
+
+
+
+    public interface TimeElapsed{
+        public void onTimerFired(float timeElapsed);
     }
 
 }

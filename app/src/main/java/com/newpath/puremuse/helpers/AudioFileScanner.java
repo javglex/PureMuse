@@ -104,12 +104,14 @@ public class AudioFileScanner {
                         String name = c.getString(2);
                         String path = c.getString(4);
                         int albumId = c.getInt(7);
+                        String duration = c.getString(6);
 
                         audioModel.setDisplayName(name);
                         audioModel.setAlbum(album);
                         audioModel.setArtist(artist);
                         audioModel.setPath(path);
                         audioModel.setAlbumId(albumId);
+                        audioModel.setDuration(duration);
 
 //                        Log.i("Name :" + name, " Album :" + album);
 //                        Log.i("Path :" + path, " Artist :" + artist);

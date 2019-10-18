@@ -2,7 +2,10 @@ package com.newpath.puremuse;
 
 import android.animation.ArgbEvaluator;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProviders;
+
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.fragment.app.FragmentManager;
@@ -13,16 +16,22 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
+import android.os.Handler;
 import android.util.Log;
+import android.util.MutableFloat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.newpath.puremuse.adapters.SectionsPagerAdapter;
 import com.newpath.puremuse.database.AppDatabase;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
+import com.newpath.puremuse.models.AudioFileModel;
+import com.newpath.puremuse.services.MusicPlayService;
 import com.newpath.puremuse.ui.main.SongViewModel;
 import com.newpath.puremuse.helpers.StoragePermissionHelper;
 
@@ -43,7 +52,8 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
      */
     private ViewPager mViewPager;
     private ImageButton mImgBtnLeft,mImgBtnCenter,mImgBtnRight;
-    private LinearLayout mLayoutMiniPlayer;
+    private ProgressBar mProgressMusic;
+    private ConstraintLayout mLayoutMiniPlayer;
     ImageButton mBtnMediaAction;
     Integer[] colors = null;
     ArgbEvaluator argbEvaluator = new ArgbEvaluator();
@@ -53,7 +63,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     MenuItem mItemProfile;
     private SongViewModel viewModel;
     private MediaPlayerHelper mMediaHelper;
-
+    private MusicPlayService.TimeElapsed mTimeElapsedObs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +102,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         mBtnMediaAction = findViewById(R.id.btn_media_action);
         mLayoutMiniPlayer = findViewById(R.id.ll_mini_player);
         mBtnMediaAction.setOnClickListener(this);
+        mProgressMusic = findViewById(R.id.progress_music);
 
         mLayoutMiniPlayer.setVisibility(View.GONE);
 
@@ -99,18 +110,56 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
             @Override
             public void onPlaying() {
                 mLayoutMiniPlayer.setVisibility(View.VISIBLE);
+                mBtnMediaAction.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_24dp));
+                initProgressBar();
             }
 
             @Override
             public void onPaused() {
-                mLayoutMiniPlayer.setVisibility(View.GONE);
-
+                mBtnMediaAction.setImageDrawable(getResources().getDrawable(R.drawable.ic_play_arrow_24dp));
             }
 
             @Override
             public void onStopped() {
+                mLayoutMiniPlayer.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onSkipped() {
             }
         });
+    }
+
+    private void initProgressBar(){
+
+
+        try{    //incase our current song playing does not contain the property "getDuration".
+            AudioFileModel currentSongPlaying = mMediaHelper.getPlayedSong();
+
+            mTimeElapsedObs = new MusicPlayService.TimeElapsed() {
+                @Override
+                public void onTimerFired(float timeElapsed) {
+                    float percentage = timeElapsed/Integer.parseInt(currentSongPlaying.getDuration());
+                    percentage*=1000;
+                    setProgressBarValue((int)percentage);
+
+                }
+            };
+        }catch (Exception e){
+            Log.e(TAG,e.getLocalizedMessage());
+        }
+
+
+        MusicPlayService.registerTimeElapsed(mTimeElapsedObs);
+
+    }
+
+
+    private void setProgressBarValue(int progress){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mProgressMusic.setProgress(progress,false);   //multiplied by 10 because max is out of 1000 for smoothness
+        } else mProgressMusic.setProgress(progress);
+
     }
 
     private void initToolbar(){
@@ -144,7 +193,14 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     @Override
     public void onStart(){
         super.onStart();
-       // mMediaHelper.onStart();
+        initProgressBar();
+
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        MusicPlayService.unregisterTimeElapsed();
     }
 
     @Override
