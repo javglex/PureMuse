@@ -79,6 +79,12 @@
             android:text="Add to Playlist" />
 
         <Button
+            android:id="@+id/btn_remove_from_playlist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Remove From Playlist" />
+
+        <Button
             android:id="@+id/btn_go_to_album"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -109,6 +109,7 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
 
         //get collection of songlist to filter through
         final ArrayList<AudioFileModel> collection = viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList();
+
         viewModel.updateSearchedSongList(collection);
 
         mEtSearchFiles.addTextChangedListener(new TextWatcher() {

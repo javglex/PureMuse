@@ -75,6 +75,11 @@ class SongViewModel : ViewModel() {
             _playlistList.value!!.get(pos).songList.add(song);
     }
 
+    fun removeFromPlaylist(pos: Int, song:AudioFileModel){
+        if (_playlistList.value!=null)
+            _playlistList.value!!.get(pos).songList.remove(song);
+    }
+
     fun setPlaylists(playlists: ArrayList<PlaylistModel> ){
         if (_playlistList.value!=null)
             _playlistList.value = playlists;

@@ -14,10 +14,15 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.newpath.puremuse.R;
+import com.newpath.puremuse.database.AppDatabase;
+import com.newpath.puremuse.helpers.DatabaseHelper;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.interfaces.OnFragmentResult;
 import com.newpath.puremuse.models.AudioFileModel;
+import com.newpath.puremuse.models.PlaylistModel;
 import com.newpath.puremuse.utils.Constants;
+
+import java.util.ArrayList;
 
 /**
  * Displays song options when user clicks on song settings. (Add to playlist, remove from playlist, etc)
@@ -27,7 +32,7 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
     final String TAG = "SongOptionsFragment";
     SongViewModel viewModel;
     AudioFileModel mSelectedSong;
-    Button mBtnAddToPlaylist, mBtnPlaySong;
+    Button mBtnAddToPlaylist, mBtnPlaySong, mBtnRemoveFromPlaylist;
     private MediaPlayerHelper mMediaHelper;
     private int mSongpos, mColpos, mColType;
 
@@ -76,13 +81,18 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
         TextView albumName = view.findViewById(R.id.tv_album_name);
         mBtnPlaySong = view.findViewById(R.id.btn_play);
         mBtnAddToPlaylist = view.findViewById(R.id.btn_add_playlist);
+        mBtnRemoveFromPlaylist = view.findViewById(R.id.btn_remove_from_playlist);
 
         mBtnAddToPlaylist.setOnClickListener(this);
         mBtnPlaySong.setOnClickListener(this);
+        mBtnRemoveFromPlaylist.setOnClickListener(this);
 
         tvSongTitle.setText(mSelectedSong.getDisplayName());
         albumName.setText(mSelectedSong.getAlbum());
 
+        if (mColType == 1){
+            mBtnRemoveFromPlaylist.setVisibility(View.VISIBLE);
+        } else mBtnRemoveFromPlaylist.setVisibility(View.GONE);
     }
 
     public void buildSelectedSong(){
@@ -159,6 +169,45 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
         });
     }
 
+    private void removeFromCollection(){
+
+        Log.d(TAG,"removing from collection...");
+        if (mColpos==-1 || mColType!=1){ //if a collection was not selected or if the collection type is not of playlist
+            Log.e(TAG,"position or type incorrect");
+            return;
+        }
+
+        if (viewModel!=null && viewModel.getCollection(Constants.COLLECTION_TYPE.PLAYLIST)!=null)
+        {
+            viewModel.removeFromPlaylist(mColpos,mSelectedSong);
+        } else {
+            Log.e(TAG, "viewModel!=null && viewModel.getCollection(position)!=null");
+            return;
+        }
+
+
+        DatabaseHelper.populateAsync(
+            (ArrayList<PlaylistModel>) viewModel.getCollection(Constants.COLLECTION_TYPE.PLAYLIST),
+            AppDatabase.getAppDatabase(getActivity()),
+            new DatabaseHelper.DbCallback<Void>() {
+
+                @Override
+                public void onFinished(Void result) {
+                    Log.d(TAG,"finished db populate");
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
+
+        //update searched song list so that parent fragment displays updated list correctly
+        viewModel.updateSearchedSongList(viewModel.getCollection(mColType).get(mColpos).getSongList());
+        getActivity().getSupportFragmentManager().popBackStack();
+
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -170,6 +219,11 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
                 break;
             case R.id.btn_add_playlist:
                 addToCollectionFragment();
+                break;
+            case R.id.btn_remove_from_playlist:
+                removeFromCollection();
+                break;
+            default:
                 break;
         }
     }
