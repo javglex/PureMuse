@@ -158,7 +158,12 @@ public class MediaPlayerHelper {
     }
 
     public AudioFileModel getPlayedSong(){
-        return mAudioFileQueue.get(mCurrentUriIndex);
+        try{
+            return mAudioFileQueue.get(mCurrentUriIndex);
+        }catch(Exception e){
+            Log.e(TAG,e.getLocalizedMessage());
+            return null;
+        }
     }
 
     private void initMediaController(){

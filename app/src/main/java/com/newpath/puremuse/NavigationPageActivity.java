@@ -3,8 +3,11 @@ package com.newpath.puremuse;
 import android.animation.ArgbEvaluator;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -32,6 +35,8 @@ import com.newpath.puremuse.database.AppDatabase;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.models.AudioFileModel;
 import com.newpath.puremuse.services.MusicPlayService;
+import com.newpath.puremuse.ui.main.CreatePlaylistFragment;
+import com.newpath.puremuse.ui.main.LargePlayerFragment;
 import com.newpath.puremuse.ui.main.SongViewModel;
 import com.newpath.puremuse.helpers.StoragePermissionHelper;
 
@@ -101,6 +106,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         //retrieve button from small media player
         mBtnMediaAction = findViewById(R.id.btn_media_action);
         mLayoutMiniPlayer = findViewById(R.id.ll_mini_player);
+        mLayoutMiniPlayer.setOnClickListener(this);
         mBtnMediaAction.setOnClickListener(this);
         mProgressMusic = findViewById(R.id.progress_music);
 
@@ -132,9 +138,10 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
 
     private void initProgressBar(){
 
-
         try{    //incase our current song playing does not contain the property "getDuration".
-            AudioFileModel currentSongPlaying = mMediaHelper.getPlayedSong();
+            final AudioFileModel currentSongPlaying = mMediaHelper.getPlayedSong();
+            if (currentSongPlaying==null)
+                return;
 
             mTimeElapsedObs = new MusicPlayService.TimeElapsed() {
                 @Override
@@ -149,7 +156,6 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
             Log.e(TAG,e.getLocalizedMessage());
         }
 
-
         MusicPlayService.registerTimeElapsed(mTimeElapsedObs);
 
     }
@@ -159,7 +165,6 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mProgressMusic.setProgress(progress,false);   //multiplied by 10 because max is out of 1000 for smoothness
         } else mProgressMusic.setProgress(progress);
-
     }
 
     private void initToolbar(){
@@ -173,6 +178,15 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         if (StoragePermissionHelper.handlePermissions(this))
             viewModel.startScan(this);
 
+    }
+
+    private void addLargePlayerFragment(){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        LargePlayerFragment fragment = LargePlayerFragment.newInstance(0,0);
+        fragmentTransaction.replace(R.id.main_content, fragment);
+        fragmentTransaction.addToBackStack("LargePlayerFragment");
+        fragmentTransaction.commit();
     }
 
     @Override
@@ -254,6 +268,9 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
             case R.id.btn_playlist:
                 mViewPager.setCurrentItem(2,true);
                 break;
+            case R.id.ll_mini_player:
+                addLargePlayerFragment();
+                break;
             default:
                 break;
         }
@@ -296,17 +313,27 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     private class CustomOnPageChangeListener implements ViewPager.OnPageChangeListener {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            if(position < (mSectionsPagerAdapter.getCount() -1) && position < (colors.length - 1)) {
+//            mToolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+//
+//            TypedArray bgs = getResources().obtainTypedArray(R.array.bg_gradients);
+//
+//            // get resource ID by index
+//            int b = bgs.getResourceId(position, -1);
+//
+//            // recycle the array
+//            bgs.recycle();
+//
+//            if(position < (mSectionsPagerAdapter.getCount() -1) && position < (colors.length - 1)) {
+//
+//                int color=(Integer) argbEvaluator.evaluate(positionOffset, colors[position], colors[position + 1]);
+//            } else {
+//                // the last page color
+//                int lastPageColor=colors[colors.length - 1];
+//                mViewPager.setBackgroundColor(lastPageColor);
+//                //mToolbar.setBackgroundColor(lastPageColor);
+//            }
 
-                int color=(Integer) argbEvaluator.evaluate(positionOffset, colors[position], colors[position + 1]);
-                mViewPager.setBackgroundColor(color);
-                mToolbar.setBackgroundColor(color);
-            } else {
-                // the last page color
-                int lastPageColor=colors[colors.length - 1];
-                mViewPager.setBackgroundColor(lastPageColor);
-                mToolbar.setBackgroundColor(lastPageColor);
-            }
+
         }
 
         @Override

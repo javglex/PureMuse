@@ -237,7 +237,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             @Override
             public void onSeekTo(long pos) {
                 super.onSeekTo(pos);
-                //mMediaPlayer.seekTo((int)pos); for now disable then figure out how it works
+                mMediaPlayer.seekTo((int)pos);
             }
 
             @Override
@@ -328,6 +328,15 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 }
                 Log.d(TAG,"successfullyRetrievedAudioFocus()");
 
+                mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                    @Override
+                    public void onSeekComplete(MediaPlayer mp) {
+                        mMediaSessionCompat.setActive(true);
+                        setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+                        showPlayingNotification();
+                        mMediaPlayer.start();                    }
+                });
+
                 if (!playOnPrepare)
                     return;
                 mMediaSessionCompat.setActive(true);
@@ -384,6 +393,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
                 | PlaybackStateCompat.ACTION_STOP
                 | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
                 | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                | PlaybackStateCompat.ACTION_SEEK_TO
         );
 
         playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
@@ -486,6 +496,12 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
 
     public void addTimeElapsed(float timeToAdd){
         mTimeElapsed+=timeToAdd;
+    }
+
+    public static void correctTimeAfterSeek(float seekTime){
+        if (mTimeElapsed<seekTime)
+            mTimeElapsed+=seekTime-mTimeElapsed;
+        else mTimeElapsed-=mTimeElapsed-seekTime;
     }
 
     public float getTimeElapsed(){
