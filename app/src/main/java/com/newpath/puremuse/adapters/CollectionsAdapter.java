@@ -85,7 +85,8 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
 
         String imagePath=null;
         try {
-            imagePath = AudioFileScanner.getAlbumImage(collection.getSongList().get(0).getAlbumId());
+            if (collection.getSongList().size()>0 && collection.getSongList().get(0)!=null)
+                imagePath = AudioFileScanner.getAlbumImage(collection.getSongList().get(0).getAlbumId());
         } catch (Exception e) {
             e.printStackTrace();
         }

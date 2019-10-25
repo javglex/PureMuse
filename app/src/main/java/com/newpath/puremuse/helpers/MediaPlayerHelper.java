@@ -42,7 +42,7 @@ public class MediaPlayerHelper {
     private Activity mActivity;
     private int mCurrentUriIndex;                         //currently playing index of song in the list
     private ArrayList<AudioFileModel> mAudioFileQueue;
-    private MusicPlayerStateChange mStateChange;
+    private ArrayList<MusicPlayerStateChange> mStateChange;
 
     public static MediaPlayerHelper getMediaPlayerInstance(final Activity activity){
         if (sMediaPlayerHelper==null)
@@ -54,25 +54,7 @@ public class MediaPlayerHelper {
     private MediaPlayerHelper(final Activity activity){
 
         mActivity = activity;
-        mStateChange = new MusicPlayerStateChange() {
-            @Override
-            public void onPlaying() {
-
-            }
-            @Override
-            public void onPaused(){
-
-            }
-            @Override
-            public void onStopped() {
-
-            }
-
-            @Override
-            public void onSkipped() {
-
-            }
-        };
+        mStateChange = new ArrayList<>();
 
         initConnectionCallback();
         initMediaController();
@@ -108,13 +90,13 @@ public class MediaPlayerHelper {
 
     }
 
-
+    public String getState(){
+        return mCurrentState;
+    }
 
     private MediaPlayerHelper prepareSong(AudioFileModel audioFile){
 
         Log.d(TAG,"name: " + audioFile.getDisplayName());
-
-        loadImageIntoMiniplayer(audioFile);
 
         Uri pathUri = Uri.parse(audioFile.getPath());
         Bundle mediaBundle = new Bundle();
@@ -127,8 +109,6 @@ public class MediaPlayerHelper {
 
     private MediaPlayerHelper prepareAndPlaySong(AudioFileModel audioFile){
         Log.d(TAG,"name: " + audioFile.getDisplayName());
-
-        loadImageIntoMiniplayer(audioFile);
 
         Uri pathUri = Uri.parse(audioFile.getPath());
         Bundle mediaBundle = new Bundle();
@@ -180,26 +160,30 @@ public class MediaPlayerHelper {
                 switch(state.getState()){
                     case PlaybackStateCompat.STATE_PLAYING:
                         mCurrentState = Constants.STATE.STATE_PLAYING;
-                        mStateChange.onPlaying();
+                        for (MusicPlayerStateChange s : mStateChange)
+                            s.onPlaying();
                         break;
                     case PlaybackStateCompat.STATE_PAUSED:
-                        mCurrentState = Constants.STATE.STATE_PAUSED;
-                        mStateChange.onPaused();
+                        for (MusicPlayerStateChange s : mStateChange)
+                            s.onPaused();
                         break;
                     case PlaybackStateCompat.STATE_STOPPED:
                         mCurrentState = Constants.STATE.STATE_STOPPED;
-                        mStateChange.onStopped();
+                        for (MusicPlayerStateChange s : mStateChange)
+                            s.onStopped();
                         break;
                     case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
                         mCurrentState = Constants.STATE.STATE_SKIPPING_TO_NEXT;
                         prepareAndPlaySong(mAudioFileQueue.get(getNextIndex(mCurrentUriIndex)));
-                        mStateChange.onSkipped();
+                        for (MusicPlayerStateChange s : mStateChange)
+                            s.onSkipped();
                         play();
                         break;
                     case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
                         mCurrentState = Constants.STATE.STATE_SKIPPING_TO_PREVIOUS;
                         prepareAndPlaySong(mAudioFileQueue.get(getPreviousIndex(mCurrentUriIndex)));
-                        mStateChange.onSkipped();
+                        for (MusicPlayerStateChange s : mStateChange)
+                            s.onSkipped();
                         play();
                         break;
                     default:
@@ -236,6 +220,10 @@ public class MediaPlayerHelper {
     private void setupMediaToggleButton(){
         //mPlayPauseToggleButton = findViewById<Button>(R.id.button)
 
+        if (mMediaBrowserCompat!=null && mMediaBrowserCompat.isConnected()){
+            return;
+        }
+
         mMediaBrowserCompat = new MediaBrowserCompat(mActivity,
                 new ComponentName(mActivity, MusicPlayService.class),
                 mMediaBrowserCompatConnectionCallback,
@@ -264,7 +252,14 @@ public class MediaPlayerHelper {
     }
 
     public void registerPlayerState(MusicPlayerStateChange stateChange){
-        mStateChange = stateChange;
+        if (mStateChange==null) mStateChange = new ArrayList<>();
+        if (stateChange==null) return;
+        mStateChange.add(stateChange);
+    }
+
+    public void unregisterPlayerState(MusicPlayerStateChange stateChange){
+        if (stateChange==null) return;
+        mStateChange.remove(stateChange);
     }
 
     public int getNextIndex(int currentIndex){
@@ -317,23 +312,22 @@ public class MediaPlayerHelper {
     public void onDestroy(){
         Log.d(TAG,"onDestroy");
 
-        try{
-            if( MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
-                MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-
-        if (mMediaBrowserCompat != null) {
-            mMediaBrowserCompat.disconnect();
-            mMediaBrowserCompat = null;
-        }
-        if (mMediaControllerCompatCallback!=null){
-            mMediaControllerCompatCallback.onSessionDestroyed();
-
-        }
+//        try{
+//            if( MediaControllerCompat.getMediaController(mActivity).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING ) {
+//                MediaControllerCompat.getMediaController(mActivity).getTransportControls().pause();
+//            }
+//        }catch(Exception e){
+//            e.printStackTrace();
+//        }
+//
+//
+//        if (mMediaBrowserCompat != null) {
+//            mMediaBrowserCompat.disconnect();
+//            mMediaBrowserCompat = null;
+//        }
+//        if (mMediaControllerCompatCallback!=null){
+//            mMediaControllerCompatCallback.onSessionDestroyed();
+//        }
 
         sMediaPlayerHelper=null;
     }
@@ -345,38 +339,6 @@ public class MediaPlayerHelper {
         public void onSkipped();
     }
 
-    public void loadImageIntoMiniplayer(AudioFileModel song){
 
-        try {
-            ConstraintLayout layout = mActivity.findViewById(R.id.ll_mini_player);
-            TextView tvSongName = mActivity.findViewById(R.id.tv_song_title);
-            TextView tvAlbumName = mActivity.findViewById(R.id.tv_album_name);
-            ImageView img = layout.findViewById(R.id.img_album_cover);
-
-            String imagePath = AudioFileScanner.getAlbumImage(song.getAlbumId());
-
-            tvSongName.setText(song.getDisplayName());
-            tvAlbumName.setText(song.getAlbum());
-
-            RequestOptions options = new RequestOptions();
-            options.centerCrop();
-
-            if (imagePath == null) {
-                Glide.with(img.getContext()).load(R.drawable.ic_album_24dp)
-                        .thumbnail(0.5f)
-                        .apply(options)
-                        .into(img);
-            } else {
-
-                Glide.with(img.getContext()).load(imagePath)
-                        .thumbnail(0.5f)
-                        .apply(options)
-                        .into(img);
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-    }
 
 }

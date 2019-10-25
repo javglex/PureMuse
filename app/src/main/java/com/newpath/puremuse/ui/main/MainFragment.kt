@@ -85,7 +85,15 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
             }
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 Log.d(TAG,"onTextChanged: "+ s);
+
                 var tempSearchList = ArrayList<AudioFileModel>();
+                if (count==0){      //if there is nothing in the input field. Revert to showing entire list.
+                    tempSearchList = viewModel.scannedSongList.value!!
+                    viewModel.updateSearchedSongList(tempSearchList);
+                    return;
+
+                }
+
                 for (song in viewModel.scannedSongList.value!!){
                     Log.d(TAG,"song searching for: "+ song);
                     Log.d(TAG,"using string: "+ s);
@@ -95,11 +103,10 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
                         tempSearchList.add(song);
                     }
                 }
-                if (count==0){      //if there is nothing in the input field. Revert to showing entire list.
-                    tempSearchList = viewModel.scannedSongList.value!!;
-                }
 
                 viewModel.updateSearchedSongList(tempSearchList);
+
+
             }
         })
 
@@ -124,6 +131,8 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
             }
         });
 
+        if (savedInstanceState!=null)
+            return;
         DatabaseHelper.retrieveAsync(AppDatabase.getAppDatabase(activity), object: DatabaseHelper.DbCallback <ArrayList<PlaylistModel>> {
             override fun onFinished(result: java.util.ArrayList<PlaylistModel>) {
                 Log.d(TAG, "finished db retrieval")

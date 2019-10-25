@@ -34,6 +34,7 @@ import com.newpath.puremuse.utils.Constants;
 import com.newpath.puremuse.helpers.MediaStyleHelper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -52,7 +53,7 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
     private Uri mCurrentPlayingURI;         //URI of song currently playing
     private MediaSessionCompat.Callback mMediaSessionCallback;
     private boolean playOnPrepare = false;      //determines whether to play song on prepare or not
-    private static TimeElapsed mTimeElapsedObs;
+    private static ArrayList<TimeElapsed> mTimeElapsedObs;
     Handler mTimerHandler = new Handler();
     Runnable mTimerRunnable;
     private static float mTimeElapsed=0;
@@ -131,11 +132,11 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.abandonAudioFocus(this);
+//        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+//        audioManager.abandonAudioFocus(this);
         unregisterReceiver(mNoisyReceiver);
-        mMediaSessionCompat.release();
-        NotificationManagerCompat.from(this).cancel(1);
+//        mMediaSessionCompat.release();
+//        NotificationManagerCompat.from(this).cancel(1);
     }
 
 
@@ -462,11 +463,16 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
 
 
     public static void registerTimeElapsed(TimeElapsed t){
-        mTimeElapsedObs = t;
+        if (mTimeElapsedObs==null)
+            mTimeElapsedObs = new ArrayList<TimeElapsed>();
+        if (t==null)
+            return;
+        mTimeElapsedObs.add(t);
     }
 
-    public static void unregisterTimeElapsed(){
-        mTimeElapsedObs=null;
+    public static void unregisterTimeElapsed(TimeElapsed t){
+        if (t==null) return;
+        mTimeElapsedObs.remove(t);
     }
 
     public void initTimer(){
@@ -477,8 +483,9 @@ public class MusicPlayService extends MediaBrowserServiceCompat implements Audio
             public void run() {
                 addTimeElapsed(UPDATE_SPEED);
                 mTimerHandler.postDelayed(mTimerRunnable,UPDATE_SPEED);
-                if (mTimeElapsedObs!=null){
-                    mTimeElapsedObs.onTimerFired(mTimeElapsed);
+                if (mTimeElapsedObs!=null && mTimeElapsedObs.size()>0){
+                    for (TimeElapsed obs : mTimeElapsedObs)
+                        obs.onTimerFired(mTimeElapsed);
                 }
             }
         };

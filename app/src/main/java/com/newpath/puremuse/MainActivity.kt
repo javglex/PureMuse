@@ -35,9 +35,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance(-1))
-                    .commitNow()
+//            supportFragmentManager.beginTransaction()
+//                    .replace(R.id.container, MainFragment.newInstance(-1))
+//                    .commitNow()
         }
 
         viewModel = ViewModelProviders.of(this).get(SongViewModel::class.java)
@@ -48,23 +48,9 @@ class MainActivity : AppCompatActivity() {
 //        i.action=START_ACTION
 //        startService(i)
 
-        initConnectionCallback()
-        initMediaController();
-        setupMediaToggleButton()
-        Handler().postDelayed({
-            MediaControllerCompat.getMediaController(this@MainActivity).transportControls.pause()
-        }, 5000)
-
-        Handler().postDelayed({
-            MediaControllerCompat.getMediaController(this@MainActivity).transportControls.play()
-        }, 6000)
-
-        Handler().postDelayed({
-            var pathUri:Uri = Uri.parse("/storage/emulated/0/Music/eMusic/Wisin & Yandel/Mi Vida…My Life/03 Esta Noche Hay Pelea.mp3");
-            MediaControllerCompat.getMediaController(this@MainActivity).getTransportControls().playFromUri(pathUri, null)
-            MediaControllerCompat.getMediaController(this@MainActivity).transportControls.play()
-
-        }, 10000)
+//        initConnectionCallback()
+//        initMediaController();
+//        setupMediaToggleButton()
 
     }
 

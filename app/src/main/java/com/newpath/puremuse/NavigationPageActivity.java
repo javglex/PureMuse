@@ -27,11 +27,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.newpath.puremuse.adapters.SectionsPagerAdapter;
 import com.newpath.puremuse.database.AppDatabase;
+import com.newpath.puremuse.helpers.AudioFileScanner;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.models.AudioFileModel;
 import com.newpath.puremuse.services.MusicPlayService;
@@ -39,6 +44,7 @@ import com.newpath.puremuse.ui.main.CreatePlaylistFragment;
 import com.newpath.puremuse.ui.main.LargePlayerFragment;
 import com.newpath.puremuse.ui.main.SongViewModel;
 import com.newpath.puremuse.helpers.StoragePermissionHelper;
+import com.newpath.puremuse.utils.Constants;
 
 public class NavigationPageActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -69,6 +75,7 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     private SongViewModel viewModel;
     private MediaPlayerHelper mMediaHelper;
     private MusicPlayService.TimeElapsed mTimeElapsedObs;
+    private MediaPlayerHelper.MusicPlayerStateChange musicPlayerStateChange;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,29 +118,11 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         mProgressMusic = findViewById(R.id.progress_music);
 
         mLayoutMiniPlayer.setVisibility(View.GONE);
-
-        mMediaHelper.registerPlayerState(new MediaPlayerHelper.MusicPlayerStateChange() {
-            @Override
-            public void onPlaying() {
-                mLayoutMiniPlayer.setVisibility(View.VISIBLE);
-                mBtnMediaAction.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_24dp));
-                initProgressBar();
-            }
-
-            @Override
-            public void onPaused() {
-                mBtnMediaAction.setImageDrawable(getResources().getDrawable(R.drawable.ic_play_arrow_24dp));
-            }
-
-            @Override
-            public void onStopped() {
-                mLayoutMiniPlayer.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onSkipped() {
-            }
-        });
+        if (mMediaHelper.getState()== Constants.STATE.STATE_PLAYING) {
+            mLayoutMiniPlayer.setVisibility(View.VISIBLE);
+            initProgressBar();
+            loadImageIntoMiniplayer(mMediaHelper.getPlayedSong());
+        }
     }
 
     private void initProgressBar(){
@@ -142,16 +131,16 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
             final AudioFileModel currentSongPlaying = mMediaHelper.getPlayedSong();
             if (currentSongPlaying==null)
                 return;
+            if (mTimeElapsedObs==null)
+                mTimeElapsedObs = new MusicPlayService.TimeElapsed() {
+                    @Override
+                    public void onTimerFired(float timeElapsed) {
+                        float percentage = timeElapsed/Integer.parseInt(currentSongPlaying.getDuration());
+                        percentage*=1000;
+                        setProgressBarValue((int)percentage);
 
-            mTimeElapsedObs = new MusicPlayService.TimeElapsed() {
-                @Override
-                public void onTimerFired(float timeElapsed) {
-                    float percentage = timeElapsed/Integer.parseInt(currentSongPlaying.getDuration());
-                    percentage*=1000;
-                    setProgressBarValue((int)percentage);
-
-                }
-            };
+                    }
+                };
         }catch (Exception e){
             Log.e(TAG,e.getLocalizedMessage());
         }
@@ -172,6 +161,43 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
         mToolbar.setTitle(mSectionsPagerAdapter.getPageTitle(1));
         mToolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
         setSupportActionBar(mToolbar);
+    }
+
+    public void loadImageIntoMiniplayer(AudioFileModel song){
+
+        if (song==null)
+            return;
+
+        try {
+            ConstraintLayout layout = findViewById(R.id.ll_mini_player);
+            TextView tvSongName = findViewById(R.id.tv_song_title);
+            TextView tvAlbumName = findViewById(R.id.tv_album_name);
+            ImageView img = layout.findViewById(R.id.img_album_cover);
+
+            String imagePath = AudioFileScanner.getAlbumImage(song.getAlbumId());
+
+            tvSongName.setText(song.getDisplayName());
+            tvAlbumName.setText(song.getAlbum());
+
+            RequestOptions options = new RequestOptions();
+            options.centerCrop();
+
+            if (imagePath == null) {
+                Glide.with(img.getContext()).load(R.drawable.ic_album_24dp)
+                        .thumbnail(0.5f)
+                        .apply(options)
+                        .into(img);
+            } else {
+
+                Glide.with(img.getContext()).load(imagePath)
+                        .thumbnail(0.5f)
+                        .apply(options)
+                        .into(img);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
     }
 
     private void scanFiles(){
@@ -214,7 +240,8 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     @Override
     public void onPause(){
         super.onPause();
-        MusicPlayService.unregisterTimeElapsed();
+        MusicPlayService.unregisterTimeElapsed(mTimeElapsedObs);
+        mMediaHelper.unregisterPlayerState(musicPlayerStateChange);
     }
 
     @Override
@@ -227,7 +254,31 @@ public class NavigationPageActivity extends AppCompatActivity implements View.On
     @Override
     public void onResume(){
         super.onResume();
+        musicPlayerStateChange = new MediaPlayerHelper.MusicPlayerStateChange() {
+            @Override
+            public void onPlaying() {
+                mLayoutMiniPlayer.setVisibility(View.VISIBLE);
+                mBtnMediaAction.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_24dp));
+                initProgressBar();
+                loadImageIntoMiniplayer(mMediaHelper.getPlayedSong());
+            }
 
+            @Override
+            public void onPaused() {
+                mBtnMediaAction.setImageDrawable(getResources().getDrawable(R.drawable.ic_play_arrow_24dp));
+            }
+
+            @Override
+            public void onStopped() {
+                mLayoutMiniPlayer.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onSkipped() {
+            }
+        };
+
+        mMediaHelper.registerPlayerState(musicPlayerStateChange);
     }
 
     @Override
