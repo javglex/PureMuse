@@ -186,10 +186,14 @@ class MainFragment : Fragment(), OnItemClickListener, OnOptionsClickListener {
         val fragmentTransaction = fragmentManager!!.beginTransaction()
         val song = viewModel.searchedSongList.value!![position]
 
-        val fragment = SongOptionsFragment.newInstance( -1,position, -1 )
-        fragmentTransaction.add(R.id.fl_fragments, fragment)
-        fragmentTransaction.addToBackStack("SongOptionsFragment")
-        fragmentTransaction.commit()
+        val frag = fragmentManager.findFragmentByTag("SongOptionsFragment")
+
+        if (frag == null) { //fragment not in back stack, create it.
+            val fragment = SongOptionsFragment.newInstance(-1, position, -1)
+            fragmentTransaction.add(R.id.fl_fragments, fragment,"SongOptionsFragment")
+            fragmentTransaction.addToBackStack("SongOptionsFragment")
+            fragmentTransaction.commit()
+        }
     }
 
 

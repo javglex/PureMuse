@@ -100,7 +100,6 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
         mRvSongList = (RecyclerView) view.findViewById(R.id.rv_scan_list);
         mEtSearchFiles = view.findViewById(R.id.et_searchfiles);
 
-
         mSongAdapter = new SongAdapter(this,this, new ArrayList<AudioFileModel>(), getContext());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRvSongList.setLayoutManager(mLayoutManager);
@@ -211,9 +210,13 @@ public class SongListFragment extends Fragment implements OnItemClickListener, O
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         AudioFileModel song = viewModel.getCollection(mCollectionType).get(mCollectionPosition).getSongList().get(position);
 
-        SongOptionsFragment fragment = SongOptionsFragment.newInstance(mCollectionType,position,mCollectionPosition);
-        fragmentTransaction.add(R.id.fl_fragments, fragment);
-        fragmentTransaction.addToBackStack("SongOptionsFragment");
-        fragmentTransaction.commit();
+        Fragment frag = fragmentManager.findFragmentByTag("SongOptionsFragment");
+
+        if (frag==null) { //fragment not in back stack, create it.
+            SongOptionsFragment fragment = SongOptionsFragment.newInstance(mCollectionType, position, mCollectionPosition);
+            fragmentTransaction.add(R.id.fl_fragments, fragment,"SongOptionsFragment");
+            fragmentTransaction.addToBackStack("SongOptionsFragment");
+            fragmentTransaction.commit();
+        }
     }
 }

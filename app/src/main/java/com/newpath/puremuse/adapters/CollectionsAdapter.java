@@ -103,7 +103,7 @@ public class CollectionsAdapter extends RecyclerView.Adapter<CollectionsAdapter.
         }
 
 
-        // Loading profile image
+        // Loading album image
         Glide.with(holder.itemView.getContext()).load(imagePath)
                 .thumbnail(0.5f)
                 .apply(options)

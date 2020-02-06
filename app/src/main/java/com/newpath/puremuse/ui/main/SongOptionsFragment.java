@@ -11,10 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.newpath.puremuse.R;
 import com.newpath.puremuse.database.AppDatabase;
+import com.newpath.puremuse.helpers.AudioFileScanner;
 import com.newpath.puremuse.helpers.DatabaseHelper;
 import com.newpath.puremuse.helpers.MediaPlayerHelper;
 import com.newpath.puremuse.interfaces.OnFragmentResult;
@@ -79,6 +83,8 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
 
         TextView tvSongTitle = view.findViewById(R.id.tv_song_title);
         TextView albumName = view.findViewById(R.id.tv_album_name);
+        ImageView albumImg = view.findViewById(R.id.img_album_art);
+
         mBtnPlaySong = view.findViewById(R.id.btn_play);
         mBtnAddToPlaylist = view.findViewById(R.id.btn_add_playlist);
         mBtnRemoveFromPlaylist = view.findViewById(R.id.btn_remove_from_playlist);
@@ -89,6 +95,31 @@ public class SongOptionsFragment extends Fragment implements View.OnClickListene
 
         tvSongTitle.setText(mSelectedSong.getDisplayName());
         albumName.setText(mSelectedSong.getAlbum());
+
+        String imagePath=null;
+        try {
+                imagePath = AudioFileScanner.getAlbumImage(mSelectedSong.getAlbumId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        RequestOptions options = new RequestOptions();
+        options.centerCrop();
+
+        if (imagePath==null) {
+            Glide.with(albumImg.getContext()).load(R.drawable.ic_album_24dp)
+                    .thumbnail(0.5f)
+                    .apply(options)
+                    .into(albumImg);
+            return;
+        }else {
+            // Loading album image
+            Glide.with(albumImg.getContext()).load(imagePath)
+                    .thumbnail(0.5f)
+                    .apply(options)
+                    .into(albumImg);
+
+        }
 
         if (mColType == 1){
             mBtnRemoveFromPlaylist.setVisibility(View.VISIBLE);

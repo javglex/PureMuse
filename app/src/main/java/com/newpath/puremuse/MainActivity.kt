@@ -73,10 +73,8 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG,"onrequestpermission result");
         StoragePermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults, object: StoragePermissionHelper.PermissionCallback{
             override fun onGranted() {
-
                // startScan(this@MainActivity);
             }
-
             override fun onDenied(err: String?) {
                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
